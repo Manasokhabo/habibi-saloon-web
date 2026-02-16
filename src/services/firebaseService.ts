@@ -241,5 +241,16 @@ export const firebaseService = {
   // Contact Form
   submitContactForm: async (submission: Omit<ContactSubmission, 'id'>): Promise<void> => {
     await addDoc(collection(db, "contact_submissions"), submission);
+  },
+
+  // Salon Settings
+  getSalonSettings: async (): Promise<any> => {
+    const docSnap = await getDoc(doc(db, "settings", "salon_config"));
+    if (docSnap.exists()) return docSnap.data();
+    return null;
+  },
+
+  updateSalonSettings: async (data: any): Promise<void> => {
+    await setDoc(doc(db, "settings", "salon_config"), data, { merge: true });
   }
 };
