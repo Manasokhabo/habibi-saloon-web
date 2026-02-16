@@ -55,7 +55,8 @@ const AdminDashboard: React.FC = () => {
   const [isGalleryUploading, setIsGalleryUploading] = useState(false);
   const [isReviewUploading, setIsReviewUploading] = useState(false);
 
-  const compressImage = (dataUrl: string, maxWidth = 1080, maxHeight = 1080, quality = 0.7): Promise<string> => {
+  // Enhanced compressor that ensures images are ready for the square grid
+  const compressImage = (dataUrl: string, maxWidth = 1080, maxHeight = 1080, quality = 0.75): Promise<string> => {
     return new Promise((resolve) => {
       const img = new Image();
       img.src = dataUrl;
@@ -70,7 +71,11 @@ const AdminDashboard: React.FC = () => {
         }
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+        }
         resolve(canvas.toDataURL('image/jpeg', quality));
       };
     });
