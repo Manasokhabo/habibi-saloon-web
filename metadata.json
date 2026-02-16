@@ -1,0 +1,7 @@
+{
+  "name": "NEON CUTS - Futuristic Saloon",
+  "description": "A high-end, futuristic saloon booking platform with AI-powered style recommendations and seamless service scheduling.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
