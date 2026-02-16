@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { collection, query, orderBy, doc, deleteDoc, onSnapshot, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
@@ -15,16 +16,13 @@ const AdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [leads, setLeads] = useState<ContactSubmission[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  // Fix: Added missing selectedCustomer state to track detailed view in Customers tab
+  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
   const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-
-  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
-  const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
-  const [editDate, setEditDate] = useState('');
-  const [editTime, setEditTime] = useState('');
 
   const heroInputRef = useRef<HTMLInputElement>(null);
   const showcaseInputRef = useRef<HTMLInputElement>(null);
@@ -89,15 +87,21 @@ const AdminDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    // Robust 2-3 second notification sound
-    audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');
-    audioRef.current.volume = 0.7;
-    audioRef.current.load();
+    // Robust 3-second notification sound: Digital Bell
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2048/2048-preview.mp3');
+    audio.volume = 0.8;
+    audio.preload = 'auto';
+    audioRef.current = audio;
   }, []);
 
   const playNotification = () => {
     if (isSoundEnabled && audioRef.current) {
-      audioRef.current.play().catch(e => console.warn("Audio play blocked by browser. Interact with the page first.", e));
+      // Browsers require a user gesture to play audio. 
+      // The login click or any dashboard click will "unlock" this.
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => {
+        console.warn("Audio play failed. Awaiting user interaction.", e);
+      });
     }
   };
 
@@ -109,8 +113,10 @@ const AdminDashboard: React.FC = () => {
       const unsubscribeBookings = onSnapshot(qBookings, (snapshot) => {
         const bookingsData = snapshot.docs.map(doc => ({ ...doc.data(), firebaseId: doc.id }));
         setBookings(bookingsData);
+        
         if (!initialLoadRef.current) {
           snapshot.docChanges().forEach((change) => { 
+            // Only play sound for strictly NEW bookings
             if (change.type === "added") {
               playNotification();
             }
@@ -152,7 +158,7 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     if (adminUser.toLowerCase().trim() === 'admin@habibisalooon.com' && adminPass === 'HABIBI_ADMIN_2025') {
       setIsAdminAuthenticated(true);
-      // Attempt to play a silent sound to "unlock" audio context
+      // CRITICAL: Play a silent sound to "unlock" audio context for future auto-play notifications
       if (audioRef.current) {
         audioRef.current.play().then(() => {
           audioRef.current!.pause();
@@ -165,19 +171,22 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleApprove = async (booking: any) => {
+    // Generate the WhatsApp URL first to ensure it's available for immediate use
+    const cleanPhone = booking.phone?.replace(/\D/g, '') || '';
+    const whatsappNumber = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
+    const msg = encodeURIComponent(`Assalamu Alaikum ${booking.name}, your booking for ${booking.serviceName} at Habibi Saloon on ${booking.date} at ${booking.time} has been APPROVED. We are looking forward to serving you!`);
+    const waUrl = `https://wa.me/${whatsappNumber}?text=${msg}`;
+
+    // Open WhatsApp immediately to avoid popup blockers (browsers prefer this within the click handler)
+    const waWindow = window.open(waUrl, '_blank');
+    if (!waWindow) {
+      alert("Please allow popups to redirect to WhatsApp.");
+    }
+
     try {
       await firebaseService.updateBookingStatus(booking.firebaseId, booking.userId, booking.id, 'approved');
-      
-      // Fixed: Direct redirection to client's WhatsApp on acceptance
-      if (booking.phone) {
-        const cleanPhone = booking.phone.replace(/\D/g, '');
-        const whatsappNumber = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
-        const msg = encodeURIComponent(`Assalamu Alaikum ${booking.name}, your booking for ${booking.serviceName} at Habibi Saloon on ${booking.date} at ${booking.time} has been APPROVED. We are looking forward to serving you!`);
-        window.open(`https://wa.me/${whatsappNumber}?text=${msg}`, '_blank');
-      }
     } catch (err) {
-      console.error("Approval failed:", err);
-      alert("Failed to update booking status.");
+      console.error("Approval status sync failed:", err);
     }
   };
 
