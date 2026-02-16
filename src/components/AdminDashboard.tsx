@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { collection, query, orderBy, doc, deleteDoc, onSnapshot, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
@@ -16,7 +15,6 @@ const AdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [leads, setLeads] = useState<ContactSubmission[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  // Fix: Added missing selectedCustomer state to track detailed view in Customers tab
   const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
   const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -87,8 +85,8 @@ const AdminDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    // Robust 3-second notification sound: Digital Bell
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2048/2048-preview.mp3');
+    // Professional 3-second notification sound: Clean Digital Alert
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     audio.volume = 0.8;
     audio.preload = 'auto';
     audioRef.current = audio;
@@ -96,8 +94,6 @@ const AdminDashboard: React.FC = () => {
 
   const playNotification = () => {
     if (isSoundEnabled && audioRef.current) {
-      // Browsers require a user gesture to play audio. 
-      // The login click or any dashboard click will "unlock" this.
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(e => {
         console.warn("Audio play failed. Awaiting user interaction.", e);
@@ -116,7 +112,6 @@ const AdminDashboard: React.FC = () => {
         
         if (!initialLoadRef.current) {
           snapshot.docChanges().forEach((change) => { 
-            // Only play sound for strictly NEW bookings
             if (change.type === "added") {
               playNotification();
             }
@@ -158,7 +153,6 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     if (adminUser.toLowerCase().trim() === 'admin@habibisalooon.com' && adminPass === 'HABIBI_ADMIN_2025') {
       setIsAdminAuthenticated(true);
-      // CRITICAL: Play a silent sound to "unlock" audio context for future auto-play notifications
       if (audioRef.current) {
         audioRef.current.play().then(() => {
           audioRef.current!.pause();
@@ -171,13 +165,12 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleApprove = async (booking: any) => {
-    // Generate the WhatsApp URL first to ensure it's available for immediate use
     const cleanPhone = booking.phone?.replace(/\D/g, '') || '';
     const whatsappNumber = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
-    const msg = encodeURIComponent(`Assalamu Alaikum ${booking.name}, your booking for ${booking.serviceName} at Habibi Saloon on ${booking.date} at ${booking.time} has been APPROVED. We are looking forward to serving you!`);
+    // Professional Message without casual greetings
+    const msg = encodeURIComponent(`Greetings from Habibi Saloon. Your appointment for ${booking.serviceName} scheduled on ${booking.date} at ${booking.time} has been CONFIRMED. Total Payable: ₹${booking.price}. We look forward to your visit.`);
     const waUrl = `https://wa.me/${whatsappNumber}?text=${msg}`;
 
-    // Open WhatsApp immediately to avoid popup blockers (browsers prefer this within the click handler)
     const waWindow = window.open(waUrl, '_blank');
     if (!waWindow) {
       alert("Please allow popups to redirect to WhatsApp.");
