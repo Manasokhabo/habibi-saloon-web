@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Service, User, Booking } from '../types';
-import { SERVICES, PACKAGES, TIMESLOTS } from '../constants';
+import { SERVICES, PACKAGES, TIMESLOTS, OWNER_WHATSAPP } from '../constants';
 import { firebaseService } from '../services/firebaseService';
 import { ToastType } from './Toast';
 
@@ -21,14 +21,23 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
     name: loggedInUser?.name || '',
     phone: loggedInUser?.phone || ''
   });
+  const [hubWpNumber, setHubWpNumber] = useState(OWNER_WHATSAPP);
 
   const successAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Professional clean success chime
     successAudioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
     successAudioRef.current.volume = 0.5;
     successAudioRef.current.load();
+    
+    // Fetch live hub WP number
+    const fetchHubSettings = async () => {
+      const settings = await firebaseService.getSalonSettings();
+      if (settings?.ownerWhatsapp) {
+        setHubWpNumber(settings.ownerWhatsapp);
+      }
+    };
+    fetchHubSettings();
   }, []);
 
   useEffect(() => {
@@ -74,11 +83,9 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
 
       showToast("Royal Session successfully secured.", 'success');
       
-      const adminWhatsApp = "8240005330";
-      // Professional formal booking message
       const message = `Greetings Habibi Saloon. I would like to confirm my appointment for ${serviceName} on ${formData.date} at ${formData.time}. Client: ${formData.name}. Total amount: ₹${price}. Please acknowledge this request.`;
       const encodedMsg = encodeURIComponent(message);
-      window.open(`https://wa.me/${adminWhatsApp}?text=${encodedMsg}`, '_blank');
+      window.open(`https://wa.me/${hubWpNumber}?text=${encodedMsg}`, '_blank');
       
       onNavigate('profile');
     } catch (err: any) {
