@@ -25,6 +25,7 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
   const successAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    // Professional clean success chime
     successAudioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
     successAudioRef.current.volume = 0.5;
     successAudioRef.current.load();
@@ -52,13 +53,14 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
     
     try {
       const serviceName = selectedService?.name || 'Custom Grooming';
+      const price = selectedService?.price || 0;
       const newBooking: Booking = {
         id: 'bk-' + Date.now(),
         serviceId: selectedService?.id || 'custom',
         serviceName: serviceName,
         date: formData.date,
         time: formData.time,
-        price: selectedService?.price || 0,
+        price: price,
         status: 'pending',
         name: formData.name,
         phone: formData.phone
@@ -66,7 +68,6 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
 
       await firebaseService.addBooking(loggedInUser.id, newBooking);
       
-      // Play success notification sound
       if (successAudioRef.current) {
         successAudioRef.current.play().catch(e => console.warn("Audio play blocked", e));
       }
@@ -74,7 +75,8 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
       showToast("Royal Session successfully secured.", 'success');
       
       const adminWhatsApp = "8240005330";
-      const message = `Assalamu Alaikum Habibi Saloon! I just booked a ${serviceName} for ${formData.date} at ${formData.time}. My name is ${formData.name}. Please confirm my slot.`;
+      // Professional formal booking message
+      const message = `Greetings Habibi Saloon. I would like to confirm my appointment for ${serviceName} on ${formData.date} at ${formData.time}. Client: ${formData.name}. Total amount: ₹${price}. Please acknowledge this request.`;
       const encodedMsg = encodeURIComponent(message);
       window.open(`https://wa.me/${adminWhatsApp}?text=${encodedMsg}`, '_blank');
       
@@ -167,7 +169,7 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
                         <button 
                           key={t}
                           onClick={() => setFormData({...formData, time: t})}
-                          className={`text-[9px] py-3 rounded-xl border transition-all font-bold tracking-tight uppercase ${formData.time === t ? 'bg-amber-500 border-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20'}`}
+                          className={`text-[9px] py-3 rounded-xl border transition-all font-bold tracking-tight uppercase ${formData.time === t ? 'bg-amber-500 border-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/20'}`}
                         >
                           {t}
                         </button>
