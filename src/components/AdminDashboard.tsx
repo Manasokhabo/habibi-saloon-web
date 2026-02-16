@@ -3,6 +3,7 @@ import { collection, query, orderBy, doc, deleteDoc, onSnapshot, getDoc, updateD
 import { db } from "../firebaseConfig";
 import { User, HeroImage, Review, GalleryItem, ContactSubmission } from '../types';
 import { firebaseService } from '../services/firebaseService';
+import { TIMESLOTS } from '../constants';
 
 const IMGBB_API_KEY = "7a3f74aef6df57ab41ef9fb0c1b161d6";
 
@@ -21,6 +22,11 @@ const AdminDashboard: React.FC = () => {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+
+  // Edit states
+  const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editTime, setEditTime] = useState('');
 
   const heroInputRef = useRef<HTMLInputElement>(null);
   const showcaseInputRef = useRef<HTMLInputElement>(null);
@@ -167,7 +173,7 @@ const AdminDashboard: React.FC = () => {
   const handleApprove = async (booking: any) => {
     const cleanPhone = booking.phone?.replace(/\D/g, '') || '';
     const whatsappNumber = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
-    // Professional Message without casual greetings
+    // Professional formal message with price
     const msg = encodeURIComponent(`Greetings from Habibi Saloon. Your appointment for ${booking.serviceName} scheduled on ${booking.date} at ${booking.time} has been CONFIRMED. Total Payable: ₹${booking.price}. We look forward to your visit.`);
     const waUrl = `https://wa.me/${whatsappNumber}?text=${msg}`;
 
@@ -180,6 +186,27 @@ const AdminDashboard: React.FC = () => {
       await firebaseService.updateBookingStatus(booking.firebaseId, booking.userId, booking.id, 'approved');
     } catch (err) {
       console.error("Approval status sync failed:", err);
+    }
+  };
+
+  const handleStartEdit = (b: any) => {
+    setEditingBookingId(b.firebaseId);
+    setEditDate(b.date);
+    setEditTime(b.time);
+  };
+
+  const handleSaveEdit = async (booking: any) => {
+    try {
+      await firebaseService.updateBookingDetails(
+        booking.firebaseId,
+        booking.userId,
+        booking.id,
+        editDate,
+        editTime
+      );
+      setEditingBookingId(null);
+    } catch (err) {
+      alert("Failed to update booking nodes.");
     }
   };
 
@@ -247,38 +274,72 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const BookingCard: React.FC<{ b: any }> = ({ b }) => (
-    <div className="glass p-3 rounded-xl border border-white/5 hover:border-amber-500/30 transition-all flex flex-col h-full relative group">
-      <div className="flex justify-between items-start mb-1.5 relative z-10">
-        <span className={`px-1.5 py-0.5 rounded-md text-[6px] font-bold uppercase tracking-[0.2em] border ${
-          b.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
-          b.status === 'canceled' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 
-          'bg-white/5 text-gray-600 border-white/10'
-        }`}>{b.status}</span>
-        <button 
-          onClick={(e) => { e.stopPropagation(); handleDelete('bookings', b.firebaseId, b); }} 
-          className="text-red-500/40 hover:text-red-500 p-1 transition-colors relative z-20"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
-      </div>
-      <div className="mb-2">
-        <h4 className="text-white font-bold text-[10px] uppercase truncate italic leading-tight">{b.serviceName}</h4>
-        <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest truncate">{b.name}</p>
-      </div>
-      <div className="flex items-center justify-between mb-3 text-[8px] font-mono text-gray-400">
-        <div><span className="text-amber-500">📅</span> {b.date}</div>
-        <div><span className="text-amber-500">⏰</span> {b.time}</div>
-      </div>
-      <div className="mt-auto flex gap-1 pt-2 border-t border-white/5 relative z-10">
-        {b.status === 'pending' && (
-            <button onClick={() => handleApprove(b)} className="flex-1 py-1 bg-green-500 text-black font-bold rounded text-[7px] uppercase">OK</button>
+  const BookingCard: React.FC<{ b: any }> = ({ b }) => {
+    const isEditing = editingBookingId === b.firebaseId;
+
+    return (
+      <div className="glass p-3 rounded-xl border border-white/5 hover:border-amber-500/30 transition-all flex flex-col h-full relative group">
+        <div className="flex justify-between items-start mb-1.5 relative z-10">
+          <span className={`px-1.5 py-0.5 rounded-md text-[6px] font-bold uppercase tracking-[0.2em] border ${
+            b.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+            b.status === 'canceled' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 
+            'bg-white/5 text-gray-600 border-white/10'
+          }`}>{b.status}</span>
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleDelete('bookings', b.firebaseId, b); }} 
+            className="text-red-500/40 hover:text-red-500 p-1 transition-colors relative z-20"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+        </div>
+        
+        <div className="mb-2">
+          <h4 className="text-white font-bold text-[10px] uppercase truncate italic leading-tight">{b.serviceName}</h4>
+          <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest truncate">{b.name}</p>
+        </div>
+
+        {isEditing ? (
+          <div className="space-y-2 mb-3 animate-in fade-in duration-300">
+            <input 
+              type="date" 
+              value={editDate}
+              onChange={(e) => setEditDate(e.target.value)}
+              className="w-full bg-white/5 border border-amber-500/30 rounded px-1.5 py-1 text-[7px] text-white focus:outline-none" 
+            />
+            <select 
+              value={editTime}
+              onChange={(e) => setEditTime(e.target.value)}
+              className="w-full bg-black/40 border border-amber-500/30 rounded px-1.5 py-1 text-[7px] text-white focus:outline-none"
+            >
+              {TIMESLOTS.map(t => <option key={t} value={t} className="bg-zinc-900">{t}</option>)}
+            </select>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between mb-3 text-[8px] font-mono text-gray-400">
+            <div><span className="text-amber-500">📅</span> {b.date}</div>
+            <div><span className="text-amber-500">⏰</span> {b.time}</div>
+          </div>
         )}
-        <button className="flex-1 py-1 bg-white/5 text-blue-400 border border-white/5 rounded text-[7px] uppercase">EDIT</button>
-        <div className="shrink-0 pl-1 flex items-center"><span className="text-[10px] font-bold text-white">₹{b.price}</span></div>
+
+        <div className="mt-auto flex gap-1 pt-2 border-t border-white/5 relative z-10">
+          {isEditing ? (
+            <>
+              <button onClick={() => handleSaveEdit(b)} className="flex-1 py-1 bg-amber-500 text-black font-bold rounded text-[7px] uppercase">SAVE</button>
+              <button onClick={() => setEditingBookingId(null)} className="flex-none px-2 py-1 bg-white/5 text-gray-500 rounded text-[7px] border border-white/5">X</button>
+            </>
+          ) : (
+            <>
+              {b.status === 'pending' && (
+                  <button onClick={() => handleApprove(b)} className="flex-1 py-1 bg-green-500 text-black font-bold rounded text-[7px] uppercase">OK</button>
+              )}
+              <button onClick={() => handleStartEdit(b)} className="flex-1 py-1 bg-white/5 text-blue-400 border border-white/5 rounded text-[7px] uppercase hover:bg-white/10">EDIT</button>
+            </>
+          )}
+          <div className="shrink-0 pl-1 flex items-center"><span className="text-[10px] font-bold text-white">₹{b.price}</span></div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (!isAdminAuthenticated) {
     return (
