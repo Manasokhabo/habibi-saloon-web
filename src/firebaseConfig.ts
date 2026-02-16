@@ -1,7 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
-// ইমপোর্ট স্টাইলটা হুবহু এইটা দিবি
 import { GoogleGenerativeAI } from "@google/generative-ai"; 
 
 const firebaseConfig = {
@@ -14,13 +13,19 @@ const firebaseConfig = {
   measurementId: "G-L727BLBJX3" 
 };
 
+// Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const db = initializeFirestore(app, { experimentalForceLongPolling: true });
+
+// Initialize Firestore
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
+
 const auth = getAuth(app); 
 
-// Gemini Configuration
+// --- Gemini AI Setup ---
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export { auth, db, model }; 
 export default app;
