@@ -89,13 +89,15 @@ const AdminDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    audioRef.current.volume = 0.5;
+    // Robust 2-3 second notification sound
+    audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');
+    audioRef.current.volume = 0.7;
+    audioRef.current.load();
   }, []);
 
   const playNotification = () => {
     if (isSoundEnabled && audioRef.current) {
-      audioRef.current.play().catch(e => console.warn("Audio play blocked", e));
+      audioRef.current.play().catch(e => console.warn("Audio play blocked by browser. Interact with the page first.", e));
     }
   };
 
@@ -108,7 +110,11 @@ const AdminDashboard: React.FC = () => {
         const bookingsData = snapshot.docs.map(doc => ({ ...doc.data(), firebaseId: doc.id }));
         setBookings(bookingsData);
         if (!initialLoadRef.current) {
-          snapshot.docChanges().forEach((change) => { if (change.type === "added") playNotification(); });
+          snapshot.docChanges().forEach((change) => { 
+            if (change.type === "added") {
+              playNotification();
+            }
+          });
         }
         initialLoadRef.current = false;
         setLoading(false);
@@ -146,14 +152,37 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     if (adminUser.toLowerCase().trim() === 'admin@habibisalooon.com' && adminPass === 'HABIBI_ADMIN_2025') {
       setIsAdminAuthenticated(true);
+      // Attempt to play a silent sound to "unlock" audio context
+      if (audioRef.current) {
+        audioRef.current.play().then(() => {
+          audioRef.current!.pause();
+          audioRef.current!.currentTime = 0;
+        }).catch(() => {});
+      }
     } else {
       alert("UNAUTHORIZED: Invalid Credentials.");
     }
   };
 
+  const handleApprove = async (booking: any) => {
+    try {
+      await firebaseService.updateBookingStatus(booking.firebaseId, booking.userId, booking.id, 'approved');
+      
+      // Fixed: Direct redirection to client's WhatsApp on acceptance
+      if (booking.phone) {
+        const cleanPhone = booking.phone.replace(/\D/g, '');
+        const whatsappNumber = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
+        const msg = encodeURIComponent(`Assalamu Alaikum ${booking.name}, your booking for ${booking.serviceName} at Habibi Saloon on ${booking.date} at ${booking.time} has been APPROVED. We are looking forward to serving you!`);
+        window.open(`https://wa.me/${whatsappNumber}?text=${msg}`, '_blank');
+      }
+    } catch (err) {
+      console.error("Approval failed:", err);
+      alert("Failed to update booking status.");
+    }
+  };
+
   const handleDelete = async (collectionName: string, docId: string, item?: any) => {
     if (!docId) return;
-    // CRITICAL: Removed window.confirm() as per instructions to avoid sandbox blocks.
     try {
       const docRef = doc(db, collectionName, docId);
       await deleteDoc(docRef);
@@ -241,7 +270,7 @@ const AdminDashboard: React.FC = () => {
       </div>
       <div className="mt-auto flex gap-1 pt-2 border-t border-white/5 relative z-10">
         {b.status === 'pending' && (
-            <button onClick={() => firebaseService.updateBookingStatus(b.firebaseId, b.userId, b.id, 'approved')} className="flex-1 py-1 bg-green-500 text-black font-bold rounded text-[7px] uppercase">OK</button>
+            <button onClick={() => handleApprove(b)} className="flex-1 py-1 bg-green-500 text-black font-bold rounded text-[7px] uppercase">OK</button>
         )}
         <button className="flex-1 py-1 bg-white/5 text-blue-400 border border-white/5 rounded text-[7px] uppercase">EDIT</button>
         <div className="shrink-0 pl-1 flex items-center"><span className="text-[10px] font-bold text-white">₹{b.price}</span></div>
