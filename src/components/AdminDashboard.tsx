@@ -12,7 +12,7 @@ const AdminDashboard: React.FC = () => {
   const [adminUser, setAdminUser] = useState('');
   const [adminPass, setAdminPass] = useState('');
   
-  const [view, setView] = useState<'bookings' | 'leads' | 'customers' | 'hero' | 'reviews' | 'showcase' | 'transformations' | 'settings'>('bookings');
+  const [view, setView] = useState<'bookings' | 'settings' | 'leads' | 'customers' | 'hero' | 'reviews' | 'showcase' | 'transformations'>('bookings');
   const [bookings, setBookings] = useState<any[]>([]);
   const [leads, setLeads] = useState<ContactSubmission[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -181,7 +181,7 @@ const AdminDashboard: React.FC = () => {
     setIsSavingSettings(true);
     try {
       await firebaseService.updateSalonSettings({ ownerWhatsapp: hubWpNumber });
-      alert("Hub protocols updated. All new bookings will route to this mobile uplink.");
+      alert("HUB PROTOCOL UPDATED: Client booking confirmation requests will now route to: " + hubWpNumber);
     } catch (err) {
       alert("Settings sync failure.");
     } finally {
@@ -335,9 +335,25 @@ const AdminDashboard: React.FC = () => {
               {isSoundEnabled ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
             </button>
           </div>
+          {/* Main Navigation - HUB SETTINGS moved to second position for prominence */}
           <div className="flex glass p-1 rounded-xl border-white/10 overflow-x-auto no-scrollbar">
-            {['bookings', 'leads', 'customers', 'hero', 'reviews', 'showcase', 'transformations', 'settings'].map(tab => (
-              <button key={tab} onClick={() => { setView(tab as any); setSelectedCustomer(null); }} className={`px-4 py-2 rounded-lg font-futuristic text-[8px] tracking-[0.2em] uppercase transition-all whitespace-nowrap ${view === tab ? 'bg-amber-500 text-black font-bold' : 'text-gray-500 hover:text-white'}`}>{tab}</button>
+            {[
+              { id: 'bookings', label: 'Bookings' },
+              { id: 'settings', label: 'HUB SETTINGS' },
+              { id: 'leads', label: 'Leads' },
+              { id: 'customers', label: 'Customers' },
+              { id: 'hero', label: 'Hero' },
+              { id: 'reviews', label: 'Reviews' },
+              { id: 'showcase', label: 'Showcase' },
+              { id: 'transformations', label: 'Transformations' }
+            ].map(tab => (
+              <button 
+                key={tab.id} 
+                onClick={() => { setView(tab.id as any); setSelectedCustomer(null); }} 
+                className={`px-4 py-2 rounded-lg font-futuristic text-[8px] tracking-[0.2em] uppercase transition-all whitespace-nowrap ${view === tab.id ? 'bg-amber-500 text-black font-bold' : 'text-gray-500 hover:text-white'}`}
+              >
+                {tab.label}
+              </button>
             ))}
           </div>
         </header>
@@ -346,14 +362,20 @@ const AdminDashboard: React.FC = () => {
           <div className="py-20 text-center text-amber-500 uppercase tracking-widest text-[8px] animate-pulse">Establishing Stream...</div>
         ) : (
           <div className="animate-in fade-in duration-500">
+            {/* HUB SETTINGS VIEW */}
             {view === 'settings' && (
               <div className="max-w-md mx-auto animate-in fade-in slide-in-from-bottom-10">
                 <div className="glass p-8 rounded-[2.5rem] border border-amber-500/20 shadow-2xl">
-                  <h3 className="text-xl font-futuristic font-bold text-white mb-6 italic uppercase tracking-tighter">Hub Protocols</h3>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                      <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.747-2.874-2.512-2.96-2.626-.087-.115-.708-.943-.708-1.799 0-.856.448-1.277.608-1.438.16-.16.348-.2.464-.2.115 0 .232.001.332.005.107.005.251-.04.393.303.144.35.492 1.203.535 1.289.043.086.072.186.015.301-.058.115-.087.186-.174.287-.087.101-.183.225-.261.301-.087.086-.178.18-.077.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.043.101-.115.434-.505.549-.68.115-.174.232-.144.39-.087.158.058 1.012.477 1.185.564.174.086.289.13.332.202.045.072.045.419-.1.824zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.662 1.435 5.18L2 22l5.002-1.314A9.97 9.97 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+                    </div>
+                    <h3 className="text-xl font-futuristic font-bold text-white italic uppercase tracking-tighter">Hub Protocols</h3>
+                  </div>
                   <div className="space-y-6">
                     <div>
                       <label className="block text-[9px] uppercase tracking-[0.4em] text-gray-500 mb-2 font-bold">Owner WhatsApp Uplink</label>
-                      <p className="text-[7px] text-gray-600 mb-3 uppercase tracking-widest leading-relaxed italic">This number receives all booking confirmation requests from clients. Use 91 followed by 10 digits.</p>
+                      <p className="text-[7px] text-gray-600 mb-3 uppercase tracking-widest leading-relaxed italic">The mobile number linked to your WhatsApp. This receives booking notifications. (Format: 91XXXXXXXXXX)</p>
                       <input 
                         type="text" 
                         value={hubWpNumber}
@@ -369,18 +391,21 @@ const AdminDashboard: React.FC = () => {
                     >
                       {isSavingSettings ? 'SYNCING...' : 'SYNC HUB SETTINGS'}
                     </button>
+                    <p className="text-center text-[6px] text-gray-700 uppercase tracking-widest">Neural Link Sync Status: Active</p>
                   </div>
                 </div>
               </div>
             )}
             
+            {/* BOOKINGS VIEW */}
             {view === 'bookings' && (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                 {bookings.map(b => <BookingCard key={b.firebaseId} b={b} />)}
                 {bookings.length === 0 && <div className="col-span-full py-20 text-center opacity-20 uppercase text-[8px] tracking-[0.5em]">No Active Nodes</div>}
               </div>
             )}
-            {/* ... rest of the views (leads, customers, hero, reviews, showcase, transformations) remain the same ... */}
+
+            {/* LEADS VIEW */}
             {view === 'leads' && (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {leads.map(lead => (
@@ -398,6 +423,8 @@ const AdminDashboard: React.FC = () => {
                 ))}
               </div>
             )}
+
+            {/* CUSTOMERS VIEW */}
             {view === 'customers' && (
               selectedCustomer ? (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -437,6 +464,8 @@ const AdminDashboard: React.FC = () => {
                 </div>
               )
             )}
+
+            {/* HERO VIEW */}
             {view === 'hero' && (
               <div className="space-y-6">
                 <div className="glass p-6 rounded-2xl border border-white/10 max-w-sm">
@@ -464,6 +493,8 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* REVIEWS VIEW */}
             {view === 'reviews' && (
               <div className="space-y-6">
                 <div className="glass p-6 rounded-2xl border border-amber-500/20 max-w-lg">
@@ -509,6 +540,8 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* SHOWCASE VIEW */}
             {view === 'showcase' && (
               <div className="space-y-6">
                 <div className="glass p-6 rounded-2xl border border-amber-500/20 max-w-lg">
@@ -539,6 +572,8 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* TRANSFORMATIONS VIEW */}
             {view === 'transformations' && (
               <div className="space-y-6">
                 <div className="glass p-6 rounded-2xl border border-amber-500/20 max-w-lg">
