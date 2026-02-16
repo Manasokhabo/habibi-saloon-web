@@ -46,7 +46,7 @@ const GalleryPage: React.FC = () => {
           <h2 className="text-amber-500 font-futuristic font-bold tracking-[0.4em] mb-4 uppercase text-[10px] text-glow italic">Visual Archive</h2>
           <h1 className="text-5xl md:text-7xl font-futuristic font-bold uppercase tracking-tighter italic text-white">STYLE <span className="text-amber-500">EXHIBITION</span></h1>
           <p className="text-gray-500 text-xs md:text-sm mt-6 max-w-xl mx-auto leading-relaxed font-bold tracking-[0.2em] uppercase opacity-60">
-            A curated showcase of precision, artistry, and individual royal showcase sessions.
+            A curated showcase of precision, artistry, and individual royal sessions.
           </p>
         </header>
 
@@ -67,9 +67,9 @@ const GalleryPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Gallery Grid */}
+        {/* Gallery Grid - Forced Uniform Square Sizing */}
         {filteredItems.length > 0 ? (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <AnimatePresence mode="popLayout">
               {filteredItems.map((item) => (
                 <motion.div
@@ -79,16 +79,15 @@ const GalleryPage: React.FC = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.4 }}
-                  className="break-inside-avoid"
                 >
                   <div 
                     onClick={() => setSelectedImage(item.imageUrl || null)}
-                    className="relative group cursor-pointer overflow-hidden border border-white/5 hover:border-amber-500 transition-all duration-500 bg-zinc-900 shadow-2xl"
+                    className="relative group cursor-pointer overflow-hidden border border-white/5 hover:border-amber-500 transition-all duration-500 bg-zinc-950 aspect-square shadow-2xl rounded-2xl"
                   >
                     <img 
                       src={item.imageUrl} 
                       alt={item.title} 
-                      className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
                       <span className="text-amber-500 text-[8px] font-bold uppercase tracking-[0.3em] mb-1">{item.category}</span>
