@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { initializeFirestore, getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
+import { GoogleGenerativeAI } from "@google/genai"; // এটা যোগ করতে হবে
 
 const firebaseConfig = {
   apiKey: "AIzaSyCvHe7rC6kKYlHtVS6gwk0aAzQ0e1koe30",
@@ -15,14 +16,17 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-// Initialize Services with stability settings
-// experimentalForceLongPolling is used to prevent WebSocket connection failures
-// which cause the "Could not reach Cloud Firestore backend" error in certain networks.
+// Initialize Firestore
 const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });
 
 const auth = getAuth(app); 
 
-export { auth, db };
+// --- Gemini AI Configuration ---
+// এখানে আমরা Vercel এর Environment Variable থেকে চাবিটা নেব
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+export { auth, db, model }; // model টাকে এক্সপোর্ট করলাম
 export default app;
