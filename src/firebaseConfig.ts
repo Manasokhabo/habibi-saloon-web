@@ -1,8 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
-// ইমপোর্টটা এভাবে কর, এটাই সবচেয়ে নিরাপদ
-import * as GenerativeAI from "@google/genai";
+// ইমপোর্ট স্টাইলটা হুবহু এইটা দিবি
+import { GoogleGenerativeAI } from "@google/generative-ai"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyCvHe7rC6kKYlHtVS6gwk0aAzQ0e1koe30",
@@ -15,16 +15,11 @@ const firebaseConfig = {
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-
-const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-});
-
+const db = initializeFirestore(app, { experimentalForceLongPolling: true });
 const auth = getAuth(app); 
 
-// Gemini Setup
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-const genAI = new GenerativeAI.GoogleGenerativeAI(apiKey);
+// Gemini Configuration
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 export { auth, db, model }; 
