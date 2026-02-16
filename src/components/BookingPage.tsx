@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Service, User, Booking } from '../types';
 import { SERVICES, PACKAGES, TIMESLOTS } from '../constants';
 import { firebaseService } from '../services/firebaseService';
@@ -21,6 +21,14 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
     name: loggedInUser?.name || '',
     phone: loggedInUser?.phone || ''
   });
+
+  const successAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    successAudioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
+    successAudioRef.current.volume = 0.5;
+    successAudioRef.current.load();
+  }, []);
 
   useEffect(() => {
     if (loggedInUser) {
@@ -57,10 +65,16 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
       };
 
       await firebaseService.addBooking(loggedInUser.id, newBooking);
+      
+      // Play success notification sound
+      if (successAudioRef.current) {
+        successAudioRef.current.play().catch(e => console.warn("Audio play blocked", e));
+      }
+
       showToast("Royal Session successfully secured.", 'success');
       
       const adminWhatsApp = "8240005330";
-      const message = `Hello Habibi Saloon! I just booked a ${serviceName} for ${formData.date} at ${formData.time}. My name is ${formData.name}. Please confirm my slot.`;
+      const message = `Assalamu Alaikum Habibi Saloon! I just booked a ${serviceName} for ${formData.date} at ${formData.time}. My name is ${formData.name}. Please confirm my slot.`;
       const encodedMsg = encodeURIComponent(message);
       window.open(`https://wa.me/${adminWhatsApp}?text=${encodedMsg}`, '_blank');
       
