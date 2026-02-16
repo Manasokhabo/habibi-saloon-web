@@ -19,7 +19,40 @@
     ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
     @keyframes slide-in-right { 0% { transform: translateX(100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
     .animate-toast { animation: slide-in-right 0.3s ease-out forwards; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.2); border-radius: 10px; }
+    
+    /* Sliding Review Animation */
+    .review-track { display: flex; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    /* Fade In Animation for Gallery Items */
+    .fade-in-up {
+      animation: fadeInUp 0.8s ease-out forwards;
+      opacity: 0;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "firebase/app": "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js",
+    "@google/genai": "https://esm.sh/@google/genai@1.3.0",
+    "framer-motion": "https://esm.sh/framer-motion@11.11.17?external=react,react-dom",
+    "react-dom/": "https://esm.sh/react-dom@19.0.0/",
+    "react/": "https://esm.sh/react@19.0.0/",
+    "firebase/": "https://esm.sh/firebase@^12.9.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
   <div id="root">
@@ -27,6 +60,7 @@
       <h1 class="text-amber-500 animate-pulse text-2xl font-futuristic uppercase tracking-[0.5em]">HABIBI SALOON LOADING...</h1>
     </div>
   </div>
-  <script type="module" src="/src/index.tsx"></script>
+  <script type="module" src="./index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
