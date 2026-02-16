@@ -1,7 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
-import { GoogleGenerativeAI } from "@google/genai"; // এটা যোগ করতে হবে
+// ইমপোর্ট করার স্টাইলটা একটু বদলালাম যাতে এরর না দেয়
+import * as GoogleGenAI from "@google/genai"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyCvHe7rC6kKYlHtVS6gwk0aAzQ0e1koe30",
@@ -24,9 +25,10 @@ const db = initializeFirestore(app, {
 const auth = getAuth(app); 
 
 // --- Gemini AI Configuration ---
-// এখানে আমরা Vercel এর Environment Variable থেকে চাবিটা নেব
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+// এখানে GoogleGenAI.GoogleGenerativeAI ব্যবহার করছি
+const genAI = new GoogleGenAI.GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-export { auth, db, model }; // model টাকে এক্সপোর্ট করলাম
+export { auth, db, model }; 
 export default app;
