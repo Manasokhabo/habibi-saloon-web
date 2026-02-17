@@ -181,6 +181,14 @@ const AdminDashboard: React.FC = () => {
     window.location.href = `tel:${phone}`;
   };
 
+  const handleStatusUpdate = async (booking: any, status: 'approved' | 'canceled') => {
+    try {
+      await firebaseService.updateBookingStatus(booking.firebaseId, booking.userId, booking.id, status);
+    } catch (err) {
+      alert("Status update failed.");
+    }
+  };
+
   const handleDelete = async (collectionName: string, docId: string) => {
     if (!docId || !confirm("Erase this entry permanently from the neural database?")) return;
     try { await deleteDoc(doc(db, collectionName, docId)); }
@@ -229,7 +237,11 @@ const AdminDashboard: React.FC = () => {
   const BookingCard: React.FC<{ b: any }> = ({ b }) => (
     <div className="glass p-4 rounded-[1.5rem] border border-white/5 flex flex-col h-full relative group hover:border-amber-500/30 transition-all duration-300">
       <div className="flex justify-between items-start mb-2.5">
-         <span className={`px-2 py-0.5 rounded-lg text-[7px] font-bold uppercase border ${b.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-white/5 text-gray-500 border-white/10'}`}>{b.status}</span>
+         <span className={`px-2 py-0.5 rounded-lg text-[7px] font-bold uppercase border ${
+           b.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+           b.status === 'canceled' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+           'bg-white/5 text-gray-500 border-white/10'
+         }`}>{b.status}</span>
          <button onClick={() => handleDelete('bookings', b.firebaseId)} className="text-red-500/20 hover:text-red-500 transition-colors p-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
       </div>
       <h4 className="text-white font-bold text-[11px] uppercase italic truncate mb-0.5">{b.serviceName}</h4>
@@ -249,19 +261,27 @@ const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      <div className="mt-auto flex gap-1.5 pt-3 border-t border-white/5">
+      <div className="mt-auto space-y-2">
         {editingBookingId === b.firebaseId ? (
-          <>
+          <div className="flex gap-1.5">
             <button onClick={() => handleSaveBookingEdit(b)} className="flex-1 py-2 bg-amber-500 text-black font-bold rounded-xl text-[9px] uppercase">SAVE</button>
             <button onClick={() => setEditingBookingId(null)} className="px-3 py-2 bg-white/5 text-white rounded-xl text-[9px]">X</button>
-          </>
+          </div>
         ) : (
           <>
-            <button onClick={() => handleCall(b.phone)} className="flex-1 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
-               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-               CALL
-            </button>
-            <button onClick={() => { setEditingBookingId(b.firebaseId); setEditDate(b.date); setEditTime(b.time); }} className="flex-1 py-2 bg-white/5 border border-white/10 text-gray-400 rounded-xl text-[9px] uppercase hover:bg-white/10">EDIT</button>
+            {b.status === 'pending' && (
+              <div className="flex gap-1.5 mb-2">
+                <button onClick={() => handleStatusUpdate(b, 'approved')} className="flex-1 py-2 bg-green-500 text-black font-bold rounded-xl text-[9px] uppercase hover:bg-green-400">APPROVE</button>
+                <button onClick={() => handleStatusUpdate(b, 'canceled')} className="flex-1 py-2 bg-red-500 text-white font-bold rounded-xl text-[9px] uppercase hover:bg-red-400">DECLINE</button>
+              </div>
+            )}
+            <div className="flex gap-1.5 pt-2 border-t border-white/5">
+              <button onClick={() => handleCall(b.phone)} className="flex-1 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                CALL
+              </button>
+              <button onClick={() => { setEditingBookingId(b.firebaseId); setEditDate(b.date); setEditTime(b.time); }} className="flex-1 py-2 bg-white/5 border border-white/10 text-gray-400 rounded-xl text-[9px] uppercase hover:bg-white/10">EDIT</button>
+            </div>
           </>
         )}
       </div>
@@ -286,27 +306,65 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-24 px-4 md:px-8 bg-[#050505]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen pt-32 pb-24 px-4 md:px-8 bg-[#050505] flex">
+      {/* Sidebar Navigation */}
+      <aside className="fixed left-4 top-32 bottom-24 w-64 hidden lg:block z-50">
+        <div className="glass h-full rounded-[2.5rem] border border-white/10 p-4 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+          <div className="px-4 py-6 border-b border-white/5 mb-4">
+             <h3 className="text-amber-500 font-futuristic font-bold tracking-[0.4em] uppercase text-[9px] italic mb-1">Hub Control</h3>
+             <p className="text-white font-futuristic font-bold text-xs uppercase tracking-widest">Navigation</p>
+          </div>
+          {[
+            { id: 'bookings', label: 'Nodes (Bookings)' },
+            { id: 'customers', label: 'Registry (Clients)' },
+            { id: 'hero', label: 'Hero Feed' },
+            { id: 'showcase', label: 'Exhibits' },
+            { id: 'transformations', label: 'Neural Shift (B&A)' },
+            { id: 'leads', label: 'Leads' },
+            { id: 'reviews', label: 'Testimonials' },
+            { id: 'settings', label: 'Protocol Config' }
+          ].map(tab => (
+            <button 
+              key={tab.id} 
+              onClick={() => { setView(tab.id as any); setSelectedCustomer(null); }} 
+              className={`w-full px-5 py-4 rounded-xl font-futuristic text-[9px] tracking-[0.2em] uppercase transition-all text-left flex items-center gap-3 ${
+                view === tab.id 
+                  ? 'bg-amber-500 text-black font-bold shadow-lg shadow-amber-500/20' 
+                  : 'text-gray-500 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full ${view === tab.id ? 'bg-black' : 'bg-amber-500/20'}`}></div>
+              {tab.label}
+            </button>
+          ))}
+          <div className="mt-auto pt-6 border-t border-white/5 px-4">
+            <button onClick={handleLogout} className="text-[9px] font-bold text-gray-500 hover:text-red-500 uppercase tracking-widest transition-all">TERMINATE SESSION</button>
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex-grow lg:ml-72">
         <header className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8 border-b border-white/5 pb-8">
           <div>
             <div className="flex items-center gap-3 mb-3">
               <h2 className="text-amber-500 font-futuristic font-bold tracking-[0.5em] uppercase text-[9px]">Hub Ops Protocol</h2>
               <div className="h-px w-12 bg-amber-500/30"></div>
-              <button onClick={handleLogout} className="text-[8px] font-bold text-gray-600 hover:text-red-500 uppercase tracking-widest transition-all">TERMINATE SESSION</button>
+              <button onClick={handleLogout} className="lg:hidden text-[8px] font-bold text-gray-600 hover:text-red-500 uppercase tracking-widest transition-all">TERMINATE SESSION</button>
             </div>
             <h1 className="text-4xl md:text-6xl font-futuristic font-bold uppercase tracking-tighter italic text-white leading-none">ADMIN <span className="text-amber-500 text-glow">CONSOLE</span></h1>
           </div>
-          <div className="flex glass p-1.5 rounded-2xl border-white/10 overflow-x-auto no-scrollbar scroll-smooth">
+          
+          {/* Mobile Tab List (Visible only on smaller screens) */}
+          <div className="flex lg:hidden glass p-1.5 rounded-2xl border-white/10 overflow-x-auto no-scrollbar scroll-smooth w-full">
             {[
               { id: 'bookings', label: 'Nodes' },
               { id: 'customers', label: 'Registry' },
-              { id: 'hero', label: 'HERO FEED' },
-              { id: 'showcase', label: 'EXHIBITS' },
-              { id: 'transformations', label: 'Neural Shift' },
+              { id: 'hero', label: 'Feed' },
+              { id: 'showcase', label: 'Exhibits' },
+              { id: 'transformations', label: 'B&A' },
               { id: 'leads', label: 'Leads' },
-              { id: 'reviews', label: 'Testimonials' },
-              { id: 'settings', label: 'PROTOCOL CONFIG' }
+              { id: 'reviews', label: 'Reviews' },
+              { id: 'settings', label: 'Config' }
             ].map(tab => (
               <button 
                 key={tab.id} 
@@ -328,7 +386,7 @@ const AdminDashboard: React.FC = () => {
           <div className="animate-in fade-in duration-700">
             {/* BOOKINGS VIEW */}
             {view === 'bookings' && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {bookings.map(b => <BookingCard key={b.firebaseId} b={b} />)}
                 {bookings.length === 0 && <div className="col-span-full py-32 text-center opacity-20 uppercase text-[10px] tracking-[0.5em] italic">Registry Null: No active nodes detected</div>}
               </div>
@@ -383,8 +441,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <h3 className="text-xs font-bold font-futuristic text-white uppercase tracking-[0.4em] border-l-2 border-amber-500 pl-6 italic mb-8">Node History Pipeline</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {/* FIXED: Using global bookings state filtered by userId to ensure data accuracy */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {bookings.filter(b => b.userId === selectedCustomer.id).length > 0 ? (
                       bookings.filter(b => b.userId === selectedCustomer.id).map(b => <BookingCard key={b.firebaseId} b={b} />)
                     ) : (
@@ -404,7 +461,7 @@ const AdminDashboard: React.FC = () => {
                         <svg className="w-4 h-4 absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                      </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredUsers.map(u => (
                       <div key={u.id} onClick={() => setSelectedCustomer(u)} className="glass p-5 rounded-[2rem] border border-white/5 hover:border-amber-500/40 transition-all group cursor-pointer flex items-center gap-5">
                          <div className="w-14 h-14 rounded-2xl border border-white/10 p-0.5 bg-black group-hover:border-amber-500 transition-colors shrink-0 overflow-hidden shadow-xl">
@@ -460,7 +517,7 @@ const AdminDashboard: React.FC = () => {
                    </div>
                    <p className="text-gray-600 text-[8px] uppercase tracking-widest font-bold text-center italic">Optimal Specs: 1920x1080px • Aspect Ratio 16:9 • High Fidelity</p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {heroImages.map(img => (
                     <div key={img.id} className="relative aspect-video rounded-3xl overflow-hidden group border border-white/10 bg-zinc-950 shadow-2xl">
                        <img src={img.url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -496,7 +553,7 @@ const AdminDashboard: React.FC = () => {
                       </button>
                    </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-8 gap-5">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                   {galleryItems.filter(i => i.type === 'showcase' || i.imageUrl).map(item => (
                     <div key={item.id} className="glass p-2.5 rounded-[2rem] border border-white/10 group relative bg-zinc-950 shadow-2xl">
                        <img src={item.imageUrl} className="w-full aspect-square object-cover rounded-[1.5rem] transition-transform duration-500 group-hover:scale-105" />
@@ -539,7 +596,7 @@ const AdminDashboard: React.FC = () => {
                       </button>
                    </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {galleryItems.filter(i => i.type === 'transformation' || (i.beforeUrl && i.afterUrl)).map(item => (
                     <div key={item.id} className="glass p-3 rounded-[2.5rem] border border-white/10 relative group bg-zinc-950 shadow-2xl overflow-hidden">
                        <img src={item.afterUrl} className="w-full aspect-square object-cover rounded-[2rem] transition-transform duration-700 group-hover:scale-105" />
@@ -553,7 +610,7 @@ const AdminDashboard: React.FC = () => {
 
             {/* LEADS VIEW */}
             {view === 'leads' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                 {leads.map(lead => (
                   <div key={lead.id} className="glass p-8 rounded-[2.5rem] border border-white/5 flex flex-col group relative bg-gradient-to-br from-white/5 to-transparent">
                      <div className="flex justify-between items-center mb-5">
@@ -591,7 +648,7 @@ const AdminDashboard: React.FC = () => {
                       </button>
                    </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {reviews.map(rev => (
                     <div key={rev.id} className="glass p-6 rounded-[2rem] border border-white/5 relative group bg-gradient-to-b from-white/5 to-transparent">
                        <div className="flex items-center gap-4 mb-4">
