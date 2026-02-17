@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { collection, query, orderBy, doc, deleteDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { User, HeroImage, Review, GalleryItem, ContactSubmission } from '../types';
+import { User, HeroImage, Review, GalleryItem, ContactSubmission, Booking } from '../types';
 import { firebaseService } from '../services/firebaseService';
 import { TIMESLOTS, OWNER_WHATSAPP } from '../constants';
 
@@ -182,13 +182,13 @@ const AdminDashboard: React.FC = () => {
 
   if (!isAdminAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505] p-4">
-        <div className="bg-black border border-amber-500/30 p-8 w-full max-w-sm">
-          <h1 className="text-white font-futuristic font-bold text-center uppercase tracking-widest mb-6">Admin Access</h1>
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] p-4 py-32">
+        <div className="bg-black border border-amber-500/30 p-8 w-full max-w-sm rounded-none">
+          <h1 className="text-white font-futuristic font-bold text-center uppercase tracking-widest mb-6 italic">Admin Interface</h1>
           <form onSubmit={handleAdminAuth} className="space-y-4">
-            <input required type="email" placeholder="ADMIN ID" value={adminUser} onChange={(e) => setAdminUser(e.target.value)} className="w-full bg-white/5 border border-white/10 p-3 text-white text-[10px] outline-none focus:border-amber-500" />
-            <input required type="password" placeholder="NEURAL KEY" value={adminPass} onChange={(e) => setAdminPass(e.target.value)} className="w-full bg-white/5 border border-white/10 p-3 text-white text-[10px] outline-none focus:border-amber-500" />
-            <button className="w-full py-3 bg-amber-500 text-black font-bold uppercase text-[10px] tracking-widest hover:bg-white transition-all">Connect</button>
+            <input required type="email" placeholder="ADMIN ID" value={adminUser} onChange={(e) => setAdminUser(e.target.value)} className="w-full bg-white/5 border border-white/10 p-3 text-white text-[10px] outline-none focus:border-amber-500 rounded-none" />
+            <input required type="password" placeholder="NEURAL KEY" value={adminPass} onChange={(e) => setAdminPass(e.target.value)} className="w-full bg-white/5 border border-white/10 p-3 text-white text-[10px] outline-none focus:border-amber-500 rounded-none" />
+            <button className="w-full py-3 bg-amber-500 text-black font-bold uppercase text-[10px] tracking-widest hover:bg-white transition-all rounded-none">Verify Link</button>
           </form>
         </div>
       </div>
@@ -196,16 +196,16 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex overflow-hidden">
-      {/* SIDEBAR - LEFT, SQUARE, NON-OVERLAPPING */}
+    <div className="min-h-screen bg-[#050505] text-white flex pt-20">
+      {/* SIDEBAR - LEFT, SQUARE, EXPAND ON HOVER, PUSHES CONTENT */}
       <aside 
         onMouseEnter={() => setSidebarOpen(true)}
         onMouseLeave={() => setSidebarOpen(false)}
-        className={`bg-black border-r border-white/10 flex flex-col pt-24 transition-all duration-300 z-[100] sticky top-0 h-screen ${sidebarOpen ? 'w-52' : 'w-12 md:w-14'}`}
+        className={`bg-black border-r border-white/10 flex flex-col transition-all duration-300 z-50 sticky top-20 h-[calc(100vh-5rem)] ${sidebarOpen ? 'w-52' : 'w-12 md:w-14'}`}
       >
         <button 
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-4 text-amber-500 hover:text-white transition-colors self-center lg:hidden"
+          className="p-4 text-amber-500 hover:text-white transition-colors self-center"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
@@ -224,42 +224,46 @@ const AdminDashboard: React.FC = () => {
             <button 
               key={tab.id} 
               onClick={() => { setView(tab.id as any); setSelectedCustomer(null); }} 
-              className={`w-full text-left px-4 py-3 text-[9px] uppercase tracking-widest font-bold flex items-center transition-all ${view === tab.id ? 'bg-amber-500 text-black' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+              className={`w-full text-left px-4 py-3 text-[9px] uppercase tracking-widest font-bold flex items-center transition-all rounded-none ${view === tab.id ? 'bg-amber-500 text-black' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
             >
               <svg className="w-4 h-4 shrink-0 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={tab.icon}></path></svg>
               {sidebarOpen && <span>{tab.label}</span>}
             </button>
           ))}
         </div>
-        <button onClick={handleLogout} className="mt-auto p-4 text-[8px] text-red-500 font-bold uppercase hover:text-white transition-colors border-t border-white/5 flex items-center">
+        <button onClick={handleLogout} className="mt-auto p-4 text-[8px] text-red-500 font-bold uppercase hover:text-white transition-colors border-t border-white/5 flex items-center rounded-none">
           <svg className="w-4 h-4 mr-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
           {sidebarOpen && <span>Exit</span>}
         </button>
       </aside>
 
       {/* CONTENT AREA */}
-      <main className="flex-grow p-4 md:p-8 pt-24 max-w-[1600px] overflow-y-auto">
+      <main className="flex-grow p-4 md:p-8 overflow-y-auto">
         <header className="mb-8 flex justify-between items-end border-b border-white/5 pb-4">
-          <h1 className="text-3xl font-futuristic font-bold uppercase italic leading-none">Admin <span className="text-amber-500">Console</span></h1>
+          <div>
+             <h1 className="text-3xl font-futuristic font-bold uppercase italic leading-none">Admin <span className="text-amber-500">Console</span></h1>
+             <p className="text-[7px] text-gray-500 uppercase tracking-[0.5em] mt-2">Neural Hub Terminal Operational</p>
+          </div>
           <div className="flex items-center gap-4">
-             <div className="text-right hidden sm:block">
-                <p className="text-[10px] text-white font-bold uppercase tracking-widest">Admin Operator</p>
-                <p className="text-[8px] text-amber-500 font-bold">habibi@neural_hub</p>
+             <div className="text-right">
+                <p className="text-[10px] text-white font-bold uppercase tracking-widest italic">Hub Operator</p>
+                <p className="text-[8px] text-amber-500 font-bold">Admin ID: 2025-AX</p>
              </div>
-             <button onClick={() => setView('settings')} className="text-gray-500 hover:text-amber-500 transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-             </button>
+             {/* Admin Icon Fix */}
+             <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center group cursor-pointer hover:bg-amber-500 hover:text-black transition-all">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+             </div>
           </div>
         </header>
 
-        {loading ? <div className="py-20 text-center text-amber-500 text-[10px] tracking-widest animate-pulse uppercase">Syncing Registry...</div> : (
+        {loading ? <div className="py-20 text-center text-amber-500 text-[10px] tracking-widest animate-pulse uppercase">Establishing Link...</div> : (
           <div className="animate-in fade-in duration-500">
             {view === 'bookings' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 {bookings.map(b => (
-                  <div key={b.firebaseId} className="bg-black border border-white/10 p-3 relative group hover:border-amber-500/40 transition-all flex flex-col h-full">
+                  <div key={b.firebaseId} className="bg-black border border-white/10 p-3 relative group hover:border-amber-500/40 transition-all flex flex-col h-full rounded-none">
                     <div className="flex justify-between items-start mb-2">
-                      <span className={`text-[7px] px-1.5 py-0.5 font-bold uppercase border ${b.status === 'approved' ? 'text-green-500 border-green-500/20' : b.status === 'canceled' ? 'text-red-500 border-red-500/20' : 'text-gray-500 border-white/10'}`}>{b.status}</span>
+                      <span className={`text-[7px] px-1.5 py-0.5 font-bold uppercase border rounded-none ${b.status === 'approved' ? 'text-green-500 border-green-500/20' : b.status === 'canceled' ? 'text-red-500 border-red-500/20' : 'text-gray-500 border-white/10'}`}>{b.status}</span>
                       <button onClick={() => handleDelete('bookings', b.firebaseId)} className="text-red-500/20 hover:text-red-500"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
                     </div>
                     
@@ -268,17 +272,17 @@ const AdminDashboard: React.FC = () => {
                     
                     {editingBookingId === b.firebaseId ? (
                       <div className="space-y-1 mb-3">
-                         <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="w-full bg-zinc-900 border border-amber-500/30 text-[8px] p-1 text-white" />
-                         <select value={editTime} onChange={(e) => setEditTime(e.target.value)} className="w-full bg-zinc-900 border border-amber-500/30 text-[8px] p-1 text-white">
+                         <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="w-full bg-zinc-900 border border-amber-500/30 text-[8px] p-1 text-white rounded-none" />
+                         <select value={editTime} onChange={(e) => setEditTime(e.target.value)} className="w-full bg-zinc-900 border border-amber-500/30 text-[8px] p-1 text-white rounded-none">
                             {TIMESLOTS.map(t => <option key={t} value={t}>{t}</option>)}
                          </select>
                          <div className="flex gap-1">
-                            <button onClick={() => handleSaveEdit(b)} className="flex-1 py-1 bg-amber-500 text-black text-[7px] font-bold uppercase">Save</button>
-                            <button onClick={() => setEditingBookingId(null)} className="flex-1 py-1 bg-white/10 text-white text-[7px] font-bold uppercase">Cancel</button>
+                            <button onClick={() => handleSaveEdit(b)} className="flex-1 py-1 bg-amber-500 text-black text-[7px] font-bold uppercase rounded-none">Save</button>
+                            <button onClick={() => setEditingBookingId(null)} className="flex-1 py-1 bg-white/10 text-white text-[7px] font-bold uppercase rounded-none">X</button>
                          </div>
                       </div>
                     ) : (
-                      <div className="bg-zinc-900 p-1.5 text-[8px] font-mono text-gray-500 mb-3 flex justify-between">
+                      <div className="bg-zinc-900 p-1.5 text-[8px] font-mono text-gray-500 mb-3 flex justify-between rounded-none">
                          <span>{b.date}</span><span>{b.time}</span>
                       </div>
                     )}
@@ -286,36 +290,37 @@ const AdminDashboard: React.FC = () => {
                     <div className="mt-auto space-y-1">
                       {b.status === 'pending' && !editingBookingId && (
                         <div className="flex gap-1">
-                          <button onClick={() => handleApprove(b)} className="flex-1 py-1.5 bg-green-500 text-black font-bold text-[8px] uppercase hover:bg-green-400 transition-colors">Approve</button>
-                          <button onClick={() => handleDecline(b)} className="flex-1 py-1.5 bg-red-500 text-white font-bold text-[8px] uppercase hover:bg-red-400 transition-colors">Decline</button>
+                          <button onClick={() => handleApprove(b)} className="flex-1 py-1.5 bg-green-500 text-black font-bold text-[8px] uppercase hover:bg-green-400 transition-colors rounded-none">Approve</button>
+                          <button onClick={() => handleDecline(b)} className="flex-1 py-1.5 bg-red-500 text-white font-bold text-[8px] uppercase hover:bg-red-400 transition-colors rounded-none">Decline</button>
                         </div>
                       )}
                       
                       <div className="flex gap-1">
-                        <button onClick={() => window.location.href=`tel:${b.phone}`} className="flex-1 py-1.5 border border-white/10 text-white font-bold text-[8px] uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center gap-1.5">
+                        <button onClick={() => window.location.href=`tel:${b.phone}`} className="flex-1 py-1.5 border border-white/10 text-white font-bold text-[8px] uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center gap-1.5 rounded-none">
                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                            Call
                         </button>
                         {!editingBookingId && (
-                          <button onClick={() => handleEditBooking(b)} className="flex-1 py-1.5 border border-white/10 text-gray-400 font-bold text-[8px] uppercase hover:bg-white/5">Edit</button>
+                          <button onClick={() => handleEditBooking(b)} className="flex-1 py-1.5 border border-white/10 text-gray-400 font-bold text-[8px] uppercase hover:bg-white/5 rounded-none">Edit</button>
                         )}
                       </div>
                     </div>
                   </div>
                 ))}
+                {bookings.length === 0 && <p className="col-span-full py-20 text-center text-gray-700 text-[10px] uppercase tracking-widest italic">No bookings recorded.</p>}
               </div>
             )}
 
             {view === 'settings' && (
               <div className="max-w-xs">
-                <div className="bg-black border border-white/10 p-5">
-                   <h3 className="text-xs font-futuristic font-bold mb-4 uppercase text-amber-500">Hub Controller</h3>
+                <div className="bg-black border border-white/10 p-5 rounded-none">
+                   <h3 className="text-xs font-futuristic font-bold mb-4 uppercase text-amber-500">Config Protocol</h3>
                    <div className="space-y-3">
                       <div className="space-y-1">
-                        <label className="text-[7px] uppercase text-gray-500 font-bold">Uplink WhatsApp Target</label>
-                        <input value={hubWpNumber} onChange={(e) => setHubWpNumber(e.target.value)} className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[10px] outline-none focus:border-amber-500" />
+                        <label className="text-[7px] uppercase text-gray-500 font-bold">WhatsApp Uplink</label>
+                        <input value={hubWpNumber} onChange={(e) => setHubWpNumber(e.target.value)} className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[10px] outline-none focus:border-amber-500 rounded-none" />
                       </div>
-                      <button onClick={async () => { setIsSavingSettings(true); await firebaseService.updateSalonSettings({ ownerWhatsapp: hubWpNumber }); setIsSavingSettings(false); alert("SYNCED"); }} className="w-full py-3 bg-amber-500 text-black font-bold uppercase text-[8px] tracking-widest">{isSavingSettings ? 'Syncing...' : 'Update Config'}</button>
+                      <button onClick={async () => { setIsSavingSettings(true); await firebaseService.updateSalonSettings({ ownerWhatsapp: hubWpNumber }); setIsSavingSettings(false); alert("PROTOCOL SYNCED"); }} className="w-full py-3 bg-amber-500 text-black font-bold uppercase text-[8px] tracking-widest rounded-none">{isSavingSettings ? 'Syncing...' : 'Update'}</button>
                    </div>
                 </div>
               </div>
@@ -327,41 +332,40 @@ const AdminDashboard: React.FC = () => {
                   <div className="flex items-center justify-between mb-4">
                     <button onClick={() => setSelectedCustomer(null)} className="text-amber-500 text-[8px] uppercase font-bold tracking-widest flex items-center gap-2">
                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg>
-                       Return to Registry
+                       Registry Archive
                     </button>
                   </div>
-                  <div className="bg-black border border-white/10 p-4 flex items-center gap-6 mb-8">
+                  <div className="bg-black border border-white/10 p-4 flex items-center gap-6 mb-8 rounded-none">
                      <img src={selectedCustomer.avatar} className="w-16 h-16 bg-zinc-900 border border-white/10 p-1" />
                      <div>
                         <h2 className="text-xl font-bold uppercase italic text-white">{selectedCustomer.name}</h2>
-                        <p className="text-amber-500 text-[8px] font-bold uppercase tracking-widest">{selectedCustomer.loyaltyLevel} Status</p>
+                        <p className="text-amber-500 text-[8px] font-bold uppercase tracking-widest">{selectedCustomer.loyaltyLevel} Tier</p>
                         <p className="text-gray-500 text-[8px] mt-1">{selectedCustomer.phone}</p>
                      </div>
                   </div>
-                  <h3 className="text-[9px] font-bold uppercase text-gray-500 mb-4 tracking-[0.3em]">Historical Node stream</h3>
+                  <h3 className="text-[9px] font-bold uppercase text-gray-500 mb-4 tracking-[0.3em]">Historical Stream</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                    {/* FILTERED BOOKINGS BY USER ID */}
                     {bookings.filter(b => b.userId === selectedCustomer.id).length > 0 ? (
                       bookings.filter(b => b.userId === selectedCustomer.id).map(b => (
-                         <div key={b.firebaseId} className="bg-zinc-950 border border-white/5 p-3 flex justify-between items-center group hover:border-amber-500/20 transition-all">
+                         <div key={b.firebaseId} className="bg-zinc-950 border border-white/5 p-3 flex justify-between items-center group hover:border-amber-500/20 transition-all rounded-none">
                             <div>
                                <p className="text-white text-[9px] font-bold uppercase truncate">{b.serviceName}</p>
                                <p className="text-gray-500 text-[7px] uppercase">{b.date} @ {b.time}</p>
                             </div>
-                            <span className={`text-[7px] px-1.5 py-0.5 border uppercase font-bold ${b.status === 'approved' ? 'text-green-500 border-green-500/20' : b.status === 'canceled' ? 'text-red-500 border-red-500/20' : 'text-gray-500 border-white/5'}`}>{b.status}</span>
+                            <span className={`text-[7px] px-1.5 py-0.5 border uppercase font-bold rounded-none ${b.status === 'approved' ? 'text-green-500 border-green-500/20' : b.status === 'canceled' ? 'text-red-500 border-red-500/20' : 'text-gray-500 border-white/5'}`}>{b.status}</span>
                          </div>
                       ))
                     ) : (
-                      <p className="col-span-full text-gray-700 text-[8px] uppercase italic text-center py-10">No history logged for this entity.</p>
+                      <p className="col-span-full text-gray-700 text-[8px] uppercase italic text-center py-10">Archive empty for this entity.</p>
                     )}
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <input type="text" placeholder="Registry ID Search..." value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} className="bg-zinc-900 border border-white/10 p-2 text-white text-[10px] outline-none focus:border-amber-500 w-full max-w-xs" />
+                  <input type="text" placeholder="Identity Search..." value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} className="bg-zinc-900 border border-white/10 p-2 text-white text-[10px] outline-none focus:border-amber-500 w-full max-w-xs rounded-none" />
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                     {filteredUsers.map(u => (
-                      <div key={u.id} onClick={() => setSelectedCustomer(u)} className="bg-black border border-white/10 p-3 flex flex-col items-center text-center gap-2 cursor-pointer hover:border-amber-500/40 transition-all group">
+                      <div key={u.id} onClick={() => setSelectedCustomer(u)} className="bg-black border border-white/10 p-3 flex flex-col items-center text-center gap-2 cursor-pointer hover:border-amber-500/40 transition-all group rounded-none">
                          <img src={u.avatar} className="w-12 h-12 bg-zinc-900 border border-white/5 transition-transform group-hover:scale-105" />
                          <div className="min-w-0 w-full">
                             <h4 className="text-white font-bold text-[8px] uppercase truncate">{u.name}</h4>
@@ -376,8 +380,8 @@ const AdminDashboard: React.FC = () => {
 
             {view === 'hero' && (
               <div className="space-y-4">
-                <div className="bg-black border border-white/10 p-4 max-w-xs">
-                   <h3 className="text-[9px] font-bold uppercase mb-3">Feed Loop Synchronizer</h3>
+                <div className="bg-black border border-white/10 p-4 max-w-xs rounded-none">
+                   <h3 className="text-[9px] font-bold uppercase mb-3 italic">Visual Loop Synchronizer</h3>
                    <input type="file" ref={heroInputRef} className="hidden" accept="image/*" onChange={async (e) => { 
                      const f = e.target.files?.[0]; 
                      if (f) { 
@@ -391,11 +395,11 @@ const AdminDashboard: React.FC = () => {
                        r.readAsDataURL(f);
                      }
                    }} />
-                   <button onClick={() => heroInputRef.current?.click()} className="w-full py-3 border border-dashed border-white/10 text-[8px] uppercase font-bold text-gray-500 hover:border-amber-500 hover:text-amber-500 transition-all">{isHeroUploading ? 'SYNCING...' : 'Upload New Frame'}</button>
+                   <button onClick={() => heroInputRef.current?.click()} className="w-full py-3 border border-dashed border-white/10 text-[8px] uppercase font-bold text-gray-500 hover:border-amber-500 hover:text-amber-500 transition-all rounded-none">{isHeroUploading ? 'SYNCING...' : 'Upload Frame'}</button>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
                   {heroImages.map(img => (
-                    <div key={img.id} className="relative aspect-video bg-zinc-900 border border-white/10 overflow-hidden group">
+                    <div key={img.id} className="relative aspect-video bg-zinc-900 border border-white/10 overflow-hidden group rounded-none">
                        <img src={img.url} className="w-full h-full object-cover" />
                        <button onClick={() => handleDelete('hero_images', img.id)} className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex items-center justify-center text-red-500 transition-opacity"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
                     </div>
@@ -406,20 +410,20 @@ const AdminDashboard: React.FC = () => {
 
             {view === 'showcase' && (
               <div className="space-y-4">
-                <div className="bg-black border border-white/10 p-4 max-w-xs">
-                   <h3 className="text-[9px] font-bold uppercase mb-3 text-amber-500">Exhibit Registry</h3>
+                <div className="bg-black border border-white/10 p-4 max-w-xs rounded-none">
+                   <h3 className="text-[9px] font-bold uppercase mb-3 text-amber-500 italic">Exhibit Uplink</h3>
                    <div className="space-y-2">
-                      <input value={newGalleryItem.title} onChange={(e) => setNewGalleryItem({...newGalleryItem, title: e.target.value})} placeholder="Title" className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[9px] outline-none" />
+                      <input value={newGalleryItem.title} onChange={(e) => setNewGalleryItem({...newGalleryItem, title: e.target.value})} placeholder="Identifier" className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[9px] outline-none rounded-none" />
                       <div onClick={() => showcaseInputRef.current?.click()} className="aspect-square w-16 bg-zinc-900 border border-dashed border-white/10 flex items-center justify-center cursor-pointer mx-auto group">
                          {newGalleryItem.imageUrl ? <img src={newGalleryItem.imageUrl} className="w-full h-full object-cover" /> : <span className="text-[12px] text-gray-700 group-hover:text-amber-500">+</span>}
                       </div>
                       <input type="file" ref={showcaseInputRef} className="hidden" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onloadend = () => setNewGalleryItem({...newGalleryItem, imageUrl: r.result as string}); r.readAsDataURL(f); } }} />
-                      <button onClick={() => handleAddGalleryItem('showcase')} className="w-full py-2 bg-amber-500 text-black font-bold text-[8px] uppercase">{isGalleryUploading ? 'UPLOADING...' : 'SAVE TO GALLERY'}</button>
+                      <button onClick={() => handleAddGalleryItem('showcase')} className="w-full py-2 bg-amber-500 text-black font-bold text-[8px] uppercase rounded-none">{isGalleryUploading ? 'UPLOADING...' : 'Establish Exhibit'}</button>
                    </div>
                 </div>
                 <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
                   {galleryItems.filter(i => i.type === 'showcase').map(item => (
-                    <div key={item.id} className="relative aspect-square border border-white/5 group bg-zinc-950 overflow-hidden">
+                    <div key={item.id} className="relative aspect-square border border-white/5 group bg-zinc-950 overflow-hidden rounded-none">
                        <img src={item.imageUrl} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                        <button onClick={() => handleDelete('gallery', item.id)} className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex items-center justify-center text-red-500"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
                     </div>
@@ -430,26 +434,26 @@ const AdminDashboard: React.FC = () => {
 
             {view === 'transformations' && (
               <div className="space-y-4">
-                <div className="bg-black border border-white/10 p-4 max-w-xs">
-                   <h3 className="text-[9px] font-bold uppercase mb-3 text-amber-500">Neural Shift (B&A)</h3>
+                <div className="bg-black border border-white/10 p-4 max-w-xs rounded-none">
+                   <h3 className="text-[9px] font-bold uppercase mb-3 text-amber-500 italic">Neural Shift Sequence</h3>
                    <div className="space-y-2">
-                      <input value={newGalleryItem.title} onChange={(e) => setNewGalleryItem({...newGalleryItem, title: e.target.value})} placeholder="Identity" className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[9px] outline-none" />
+                      <input value={newGalleryItem.title} onChange={(e) => setNewGalleryItem({...newGalleryItem, title: e.target.value})} placeholder="Sequence ID" className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[9px] outline-none rounded-none" />
                       <div className="flex gap-2">
                          <div onClick={() => transBeforeRef.current?.click()} className="flex-1 aspect-square bg-zinc-900 border border-dashed border-white/10 flex items-center justify-center cursor-pointer overflow-hidden group">
-                            {newGalleryItem.beforeUrl ? <img src={newGalleryItem.beforeUrl} className="w-full h-full object-cover" /> : <span className="text-[6px] text-gray-700 group-hover:text-amber-500">BEFORE</span>}
+                            {newGalleryItem.beforeUrl ? <img src={newGalleryItem.beforeUrl} className="w-full h-full object-cover" /> : <span className="text-[6px] text-gray-700 group-hover:text-amber-500 italic">BEFORE</span>}
                          </div>
                          <div onClick={() => transAfterRef.current?.click()} className="flex-1 aspect-square bg-zinc-900 border border-dashed border-white/10 flex items-center justify-center cursor-pointer overflow-hidden group">
-                            {newGalleryItem.afterUrl ? <img src={newGalleryItem.afterUrl} className="w-full h-full object-cover" /> : <span className="text-[6px] text-gray-700 group-hover:text-amber-500">AFTER</span>}
+                            {newGalleryItem.afterUrl ? <img src={newGalleryItem.afterUrl} className="w-full h-full object-cover" /> : <span className="text-[6px] text-gray-700 group-hover:text-amber-500 italic">AFTER</span>}
                          </div>
                       </div>
                       <input type="file" ref={transBeforeRef} className="hidden" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onloadend = () => setNewGalleryItem({...newGalleryItem, beforeUrl: r.result as string}); r.readAsDataURL(f); } }} />
                       <input type="file" ref={transAfterRef} className="hidden" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onloadend = () => setNewGalleryItem({...newGalleryItem, afterUrl: r.result as string}); r.readAsDataURL(f); } }} />
-                      <button onClick={() => handleAddGalleryItem('transformation')} className="w-full py-2 bg-amber-500 text-black font-bold text-[8px] uppercase">{isGalleryUploading ? 'UPLOADING...' : 'ESTABLISH SHIFT'}</button>
+                      <button onClick={() => handleAddGalleryItem('transformation')} className="w-full py-2 bg-amber-500 text-black font-bold text-[8px] uppercase rounded-none">{isGalleryUploading ? 'UPLOADING...' : 'Establish Sequence'}</button>
                    </div>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
                   {galleryItems.filter(i => i.type === 'transformation').map(item => (
-                    <div key={item.id} className="relative aspect-square border border-white/5 group bg-zinc-950 overflow-hidden">
+                    <div key={item.id} className="relative aspect-square border border-white/5 group bg-zinc-950 overflow-hidden rounded-none">
                        <img src={item.afterUrl} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                        <button onClick={() => handleDelete('gallery', item.id)} className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex items-center justify-center text-red-500 transition-opacity"><svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
                     </div>
@@ -461,13 +465,13 @@ const AdminDashboard: React.FC = () => {
             {view === 'leads' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                 {leads.map(lead => (
-                  <div key={lead.id} className="bg-black border border-white/10 p-3 flex flex-col hover:border-amber-500/20 transition-all">
+                  <div key={lead.id} className="bg-black border border-white/10 p-3 flex flex-col hover:border-amber-500/20 transition-all rounded-none">
                      <div className="flex justify-between items-center mb-2">
                         <h4 className="text-white font-bold uppercase text-[8px]">{lead.name}</h4>
                         <button onClick={() => handleDelete('contact_submissions', lead.id!)} className="text-red-500/20 hover:text-red-500"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
                      </div>
                      <p className="text-amber-500 text-[7px] font-bold mb-2">{lead.email}</p>
-                     <div className="bg-zinc-900 p-2 mb-2 flex-grow">
+                     <div className="bg-zinc-900 p-2 mb-2 flex-grow rounded-none">
                         <p className="text-gray-400 text-[9px] italic leading-tight">"{lead.message}"</p>
                      </div>
                      <span className="text-[6px] text-gray-700 uppercase font-mono">{new Date(lead.timestamp).toLocaleDateString()}</span>
@@ -478,24 +482,24 @@ const AdminDashboard: React.FC = () => {
 
             {view === 'reviews' && (
               <div className="space-y-4">
-                <div className="bg-black border border-white/10 p-4 max-w-xs">
-                   <h3 className="text-[9px] font-bold uppercase mb-3 text-amber-500">Testimonial Entry</h3>
+                <div className="bg-black border border-white/10 p-4 max-w-xs rounded-none">
+                   <h3 className="text-[9px] font-bold uppercase mb-3 text-amber-500 italic">Manual Entry</h3>
                    <div className="space-y-2">
-                      <input value={newReview.clientName} onChange={(e) => setNewReview({...newReview, clientName: e.target.value})} placeholder="Client Identity" className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[9px] outline-none" />
-                      <textarea value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} placeholder="Neural Feedback" className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[9px] h-16 outline-none resize-none" />
+                      <input value={newReview.clientName} onChange={(e) => setNewReview({...newReview, clientName: e.target.value})} placeholder="Identity" className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[9px] outline-none rounded-none" />
+                      <textarea value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} placeholder="Neural Feedback" className="w-full bg-zinc-900 border border-white/10 p-2 text-white text-[9px] h-16 outline-none resize-none rounded-none" />
                       <button onClick={async () => {
                          if (!newReview.clientName || !newReview.comment) return alert("Params missing.");
                          setIsReviewUploading(true);
                          await firebaseService.addReview({ clientName: newReview.clientName, comment: newReview.comment, rating: newReview.rating, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newReview.clientName}` });
                          setNewReview({ clientName: '', comment: '', rating: 5, avatar: '' });
                          setIsReviewUploading(false);
-                      }} className="w-full py-2 bg-amber-500 text-black font-bold text-[8px] uppercase">{isReviewUploading ? 'UPLOADING...' : 'POST'}</button>
+                      }} className="w-full py-2 bg-amber-500 text-black font-bold text-[8px] uppercase rounded-none">{isReviewUploading ? 'UPLOADING...' : 'Verify Entry'}</button>
                    </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                   {reviews.map(rev => (
-                    <div key={rev.id} className="bg-black border border-white/5 p-3 relative group hover:border-amber-500/20 transition-all">
-                       <h4 className="text-white font-bold text-[8px] uppercase mb-1">{rev.clientName}</h4>
+                    <div key={rev.id} className="bg-black border border-white/5 p-3 relative group hover:border-amber-500/20 transition-all rounded-none">
+                       <h4 className="text-white font-bold text-[8px] uppercase mb-1 truncate">{rev.clientName}</h4>
                        <p className="text-gray-500 text-[8px] italic line-clamp-2">"{rev.comment}"</p>
                        <button onClick={() => handleDelete('reviews', rev.id)} className="absolute top-1 right-1 text-red-500/10 hover:text-red-500 p-1"><svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
                     </div>
