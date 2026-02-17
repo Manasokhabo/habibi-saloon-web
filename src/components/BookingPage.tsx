@@ -15,6 +15,8 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
   const [step, setStep] = useState(initialService ? 2 : 1);
   const [selectedService, setSelectedService] = useState<Service | null>(initialService || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [formData, setFormData] = useState({
     date: '',
     time: '',
@@ -30,7 +32,6 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
     successAudioRef.current.volume = 0.5;
     successAudioRef.current.load();
     
-    // Fetch live hub WP number
     const fetchHubSettings = async () => {
       const settings = await firebaseService.getSalonSettings();
       if (settings?.ownerWhatsapp) {
@@ -39,6 +40,23 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
     };
     fetchHubSettings();
   }, []);
+
+  // Fetch unavailable slots when date changes
+  useEffect(() => {
+    if (formData.date) {
+      const fetchAvailability = async () => {
+        setCheckingAvailability(true);
+        const booked = await firebaseService.getBookingsByDate(formData.date);
+        setBookedSlots(booked);
+        // Clear time if previously selected but now unavailable on new date
+        if (booked.includes(formData.time)) {
+          setFormData(prev => ({ ...prev, time: '' }));
+        }
+        setCheckingAvailability(false);
+      };
+      fetchAvailability();
+    }
+  }, [formData.date]);
 
   useEffect(() => {
     if (loggedInUser) {
@@ -61,6 +79,16 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
     setIsSubmitting(true);
     
     try {
+      // Final availability check before commit
+      const currentBooked = await firebaseService.getBookingsByDate(formData.date);
+      if (currentBooked.includes(formData.time)) {
+        showToast("System Conflict: This time node was just secured by another client. Please select another slot.", 'error');
+        setBookedSlots(currentBooked);
+        setStep(2);
+        setIsSubmitting(false);
+        return;
+      }
+
       const serviceName = selectedService?.name || 'Custom Grooming';
       const price = selectedService?.price || 0;
       const newBooking: Booking = {
@@ -108,10 +136,12 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
         </header>
 
         <div className="glass rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl relative">
-          {isSubmitting && (
+          {(isSubmitting || checkingAvailability) && (
              <div className="absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center backdrop-blur-md">
                 <div className="w-12 h-12 border-2 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mb-6"></div>
-                <p className="text-amber-500 font-futuristic text-[10px] uppercase tracking-widest animate-pulse">Establishing Neural Link...</p>
+                <p className="text-amber-500 font-futuristic text-[10px] uppercase tracking-widest animate-pulse">
+                  {checkingAvailability ? 'Verifying Chronology...' : 'Establishing Neural Link...'}
+                </p>
              </div>
           )}
 
@@ -165,23 +195,41 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
                     <label className="block text-[9px] uppercase tracking-[0.3em] text-gray-500 mb-3 font-bold">Chronometer: Select Date</label>
                     <input 
                       type="date" 
+                      min={new Date().toISOString().split('T')[0]}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white focus:outline-none focus:border-amber-500 text-xs font-futuristic shadow-inner"
                       onChange={(e) => setFormData({...formData, date: e.target.value})}
                     />
                   </div>
                   <div>
                     <label className="block text-[9px] uppercase tracking-[0.3em] text-gray-500 mb-3 font-bold">Select Time Node</label>
-                    <div className="grid grid-cols-3 gap-2.5">
-                      {TIMESLOTS.map(t => (
-                        <button 
-                          key={t}
-                          onClick={() => setFormData({...formData, time: t})}
-                          className={`text-[9px] py-3 rounded-xl border transition-all font-bold tracking-tight uppercase ${formData.time === t ? 'bg-amber-500 border-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/20'}`}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
+                    {!formData.date ? (
+                      <div className="h-40 flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+                         <p className="text-[8px] text-gray-600 uppercase tracking-widest">Awaiting Date Parameter...</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {TIMESLOTS.map(t => {
+                          const isBooked = bookedSlots.includes(t);
+                          return (
+                            <button 
+                              key={t}
+                              disabled={isBooked}
+                              onClick={() => setFormData({...formData, time: t})}
+                              className={`text-[9px] py-3 rounded-xl border transition-all font-bold tracking-tight uppercase relative overflow-hidden ${
+                                isBooked 
+                                  ? 'bg-red-500/5 border-red-500/20 text-gray-700 cursor-not-allowed line-through' 
+                                  : formData.time === t 
+                                    ? 'bg-amber-500 border-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' 
+                                    : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/20'
+                              }`}
+                            >
+                              {t}
+                              {isBooked && <span className="absolute inset-0 bg-red-500/5 backdrop-grayscale"></span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-5">
@@ -213,7 +261,6 @@ const BookingPage: React.FC<Props> = ({ initialService, onNavigate, loggedInUser
                     <span className="text-white font-bold text-[10px] uppercase tracking-widest">{formData.date} @ {formData.time}</span>
                   </div>
                   
-                  {/* Notification Status Logic */}
                   <div className="pt-6 border-t border-white/10 mb-6">
                     <span className="text-gray-500 text-[9px] uppercase tracking-[0.2em] block mb-3 font-bold">Notification Protocols:</span>
                     <div className="flex gap-4">
