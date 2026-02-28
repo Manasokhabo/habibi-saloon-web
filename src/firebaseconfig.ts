@@ -24,7 +24,7 @@ import {
 
 // ভেরি ইম্পর্ট্যান্ট: নিশ্চিত কর তোর ফাইলের নাম firebaseConfig.ts (C বড় হাতের)
 // যদি ফাইলের নাম ছোট হাতের হয়, তবে নিচের লাইনটি "../firebaseconfig" ই রাখবি
-import { auth, db } from "../firebaseConfig"; 
+import { auth, db } from "../firebaseconfig"; 
 import { User, Booking, HeroImage, Review, ContactSubmission, GalleryItem, NotificationPreferences } from "../types";
 
 export const firebaseService = {
