@@ -68,7 +68,8 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 border-2 border-amber-500/10 border-t-amber-500 rounded-full animate-spin mb-6"></div>
-        <p className="text-amber-500 font-futuristic text-xs tracking-[0.4em] uppercase">Initializing Royal Hub...</p>
+        {/* লোডিং টেক্সট আপডেট করেছি */}
+        <p className="text-amber-500 font-futuristic text-xs tracking-[0.4em] uppercase">Initializing Ganapati Telecom...</p>
       </div>
     );
   }
@@ -82,43 +83,44 @@ const App: React.FC = () => {
             
             <GallerySection />
 
-            {/* Why Choose Us Section - Tight Spacing */}
+            {/* Why Choose Ganapati Telecom Section - Updated with your content */}
             <section className="py-10 px-6 overflow-hidden bg-[#050505]">
               <div className="max-w-7xl mx-auto">
                  <div className="glass p-8 md:p-14 rounded-[3rem] border border-white/5 flex flex-col md:flex-row items-center gap-12 relative shadow-2xl">
                     <div className="absolute -top-12 -left-12 w-64 h-64 bg-amber-500/5 blur-[100px] rounded-full"></div>
                     <div className="md:w-1/2">
-                       <h2 className="text-3xl md:text-5xl font-futuristic font-bold mb-8 italic tracking-tighter uppercase">WHY CHOOSE <span className="text-amber-500 text-glow">HABIBI?</span></h2>
+                       <h2 className="text-3xl md:text-5xl font-futuristic font-bold mb-8 italic tracking-tighter uppercase">WHY CHOOSE <span className="text-amber-500 text-glow">GANAPATI?</span></h2>
                        <ul className="space-y-8">
                           <li className="flex gap-6">
                              <div className="w-12 h-12 shrink-0 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 text-sm font-bold font-futuristic border border-amber-500/20 shadow-lg">01</div>
                              <div>
-                                <span className="text-white font-bold uppercase tracking-widest text-xs block mb-1">Smart Bookings</span>
-                                <p className="text-gray-500 text-sm leading-relaxed font-light italic">"Effortless scheduling in under 60 seconds."</p>
+                                <span className="text-white font-bold uppercase tracking-widest text-xs block mb-1">Infrastructure Excellence</span>
+                                <p className="text-gray-500 text-sm leading-relaxed font-light italic">"Trusted provider of construction equipment and road safety systems."</p>
                              </div>
                           </li>
                           <li className="flex gap-6">
                              <div className="w-12 h-12 shrink-0 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 text-sm font-bold font-futuristic border border-amber-500/20 shadow-lg">02</div>
                              <div>
-                                <span className="text-white font-bold uppercase tracking-widest text-xs block mb-1">AI Style Advisor</span>
-                                <p className="text-gray-500 text-sm leading-relaxed font-light italic">"Neural-enhanced recommendations for your best look."</p>
+                                <span className="text-white font-bold uppercase tracking-widest text-xs block mb-1">Telecom Solutions</span>
+                                <p className="text-gray-500 text-sm leading-relaxed font-light italic">"Enabling smarter connectivity with robust infrastructure development."</p>
                              </div>
                           </li>
                           <li className="flex gap-6">
                              <div className="w-12 h-12 shrink-0 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 text-sm font-bold font-futuristic border border-amber-500/20 shadow-lg">03</div>
                              <div>
-                                <span className="text-white font-bold uppercase tracking-widest text-xs block mb-1">Luxury Environment</span>
-                                <p className="text-gray-500 text-sm leading-relaxed font-light italic">"Premium amenities in a high-tech royal hub."</p>
+                                <span className="text-white font-bold uppercase tracking-widest text-xs block mb-1">Reliable Delivery</span>
+                                <p className="text-gray-500 text-sm leading-relaxed font-light italic">"Strong commitment to quality, safety, and timely project delivery."</p>
                              </div>
                           </li>
                        </ul>
                     </div>
                     <div className="md:w-1/2 relative aspect-square rounded-[2.5rem] overflow-hidden glass border border-white/10 p-3 shadow-2xl">
-                       <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" alt="Interior" className="w-full h-full object-cover rounded-[2rem] grayscale group-hover:grayscale-0 transition-all duration-1000" />
+                       {/* স্যালুনের ছবির বদলে ইনফ্রাস্ট্রাকচারের ছবি দিয়েছি */}
+                       <img src="https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=80&w=800" alt="Construction Infrastructure" className="w-full h-full object-cover rounded-[2rem] grayscale group-hover:grayscale-0 transition-all duration-1000" />
                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent pointer-events-none"></div>
                        <div className="absolute bottom-10 left-10">
                           <span className="text-amber-500 font-futuristic font-bold text-xs uppercase tracking-[0.3em] block mb-2">Established 2020</span>
-                          <span className="text-white font-bold text-2xl uppercase tracking-tighter">Premium Experience</span>
+                          <span className="text-white font-bold text-2xl uppercase tracking-tighter">Premium Solutions</span>
                        </div>
                     </div>
                  </div>
@@ -139,8 +141,8 @@ const App: React.FC = () => {
           <section className="pt-32 pb-24 px-6 bg-[#050505]">
             <div className="max-w-7xl mx-auto">
               <header className="mb-20 text-center md:text-left">
-                <h2 className="text-amber-500 font-futuristic font-bold tracking-[0.4em] mb-4 uppercase text-[10px] text-glow">Curated Services</h2>
-                <h3 className="text-4xl md:text-6xl font-futuristic font-bold mb-8 tracking-tighter uppercase">SPECIAL <br /><span className="text-glow italic">PACKAGES</span></h3>
+                <h2 className="text-amber-500 font-futuristic font-bold tracking-[0.4em] mb-4 uppercase text-[10px] text-glow">Expert Solutions</h2>
+                <h3 className="text-4xl md:text-6xl font-futuristic font-bold mb-8 tracking-tighter uppercase">PROJECT <br /><span className="text-glow italic">PACKAGES</span></h3>
               </header>
 
               <div className="grid md:grid-cols-3 gap-10">
