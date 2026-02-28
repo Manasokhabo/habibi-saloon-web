@@ -52,14 +52,20 @@ const Hero: React.FC<Props> = ({ onNavigate }) => {
       <div className="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-8 items-center relative z-10">
         {/* Left Side: Content */}
         <div className="text-center md:text-left order-2 md:order-1 mt-8 md:mt-0">
-          <h2 className="text-amber-500 font-futuristic font-bold tracking-[0.4em] mb-4 uppercase text-[10px] animate-in fade-in slide-in-from-bottom duration-700">Royal Grooming Hub</h2>
+          {/* Tagline updated */}
+          <h2 className="text-amber-500 font-futuristic font-bold tracking-[0.4em] mb-4 uppercase text-[10px] animate-in fade-in slide-in-from-bottom duration-700">Infrastructure & Connectivity</h2>
+          
+          {/* Heading updated */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-futuristic font-bold leading-[1.1] mb-6 uppercase tracking-tighter animate-in fade-in slide-in-from-bottom duration-1000">
-            DISCOVER YOUR <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-gray-400 text-glow">ROYAL LOOK</span>
+            Powering Infrastructure <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-gray-400 text-glow">Enabling Connectivity</span>
           </h1>
+
+          {/* Description updated */}
           <p className="text-gray-400 text-sm max-w-sm mx-auto md:mx-0 mb-8 leading-relaxed font-light animate-in fade-in slide-in-from-bottom duration-1000 delay-200">
-            Welcome to Habibi Styling Saloon. We refine traditional style with futuristic precision for the ultimate look.
+            Ganapati Telecom is a trusted provider of construction equipment, road safety systems, and telecom infrastructure solutions across India.
           </p>
+
           <div className="flex flex-wrap justify-center md:justify-start gap-4 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
             <button 
               onClick={() => onNavigate('services')}
@@ -76,7 +82,7 @@ const Hero: React.FC<Props> = ({ onNavigate }) => {
           </div>
         </div>
         
-        {/* Right Side: Image Slider */}
+        {/* Right Side: Image Slider (Image alt text updated) */}
         <div className="relative order-1 md:order-2 w-full max-w-md mx-auto md:mr-0 animate-in fade-in zoom-in duration-1000">
           <div className="absolute -inset-4 bg-amber-500/10 rounded-[3rem] blur-2xl opacity-50"></div>
           <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden glass border border-white/10 shadow-2xl">
@@ -89,14 +95,13 @@ const Hero: React.FC<Props> = ({ onNavigate }) => {
               >
                 <img 
                   src={img} 
-                  alt={`Habibi Style ${index + 1}`} 
+                  alt={`Ganapati Telecom Project ${index + 1}`} 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
               </div>
             ))}
             
-            {/* Carousel Navigation Dots */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {images.map((_, index) => (
                 <button 
