@@ -24,7 +24,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "../firebaseconfig";
-import { User, Booking } from "../types";
+import { User } from "../types";
 
 export const firebaseService = {
 
@@ -93,16 +93,7 @@ export const firebaseService = {
         unsubscribeSnapshot();
         unsubscribeSnapshot = null;
       }
-// ================= GALLERY =================
 
-getGalleryItems: async () => {
-  const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-},
       if (fbUser) {
         const userRef = doc(db, "users", fbUser.uid);
 
@@ -122,6 +113,22 @@ getGalleryItems: async () => {
       unsubscribeAuth();
       if (unsubscribeSnapshot) unsubscribeSnapshot();
     };
+  },
+
+  // ================= GALLERY =================
+
+  getGalleryItems: async () => {
+    const q = query(
+      collection(db, "gallery"),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(q);
+
+    return snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
   }
 
 };
