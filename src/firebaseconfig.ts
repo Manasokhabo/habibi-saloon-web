@@ -21,7 +21,7 @@ import {
   writeBatch,
   onSnapshot
 } from "firebase/firestore";
-import { auth, db } from "../firebaseconfig";
+import { auth, db } from "../firebaseConfig"; // ✅ FIXED HERE
 import { User, Booking, HeroImage, Review, ContactSubmission, GalleryItem, NotificationPreferences } from "../types";
 
 export const firebaseService = {
@@ -90,7 +90,6 @@ export const firebaseService = {
     let unsubscribeSnapshot: (() => void) | null = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
-      // Clean up previous snapshot listener if it exists
       if (unsubscribeSnapshot) {
         unsubscribeSnapshot();
         unsubscribeSnapshot = null;
@@ -98,17 +97,21 @@ export const firebaseService = {
 
       if (fbUser) {
         const userDocRef = doc(db, "users", fbUser.uid);
-        // Establish real-time listener for the user's Firestore document
-        unsubscribeSnapshot = onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-            callback(docSnap.data() as User);
-          } else {
+
+        unsubscribeSnapshot = onSnapshot(
+          userDocRef,
+          (docSnap) => {
+            if (docSnap.exists()) {
+              callback(docSnap.data() as User);
+            } else {
+              callback(null);
+            }
+          },
+          (err) => {
+            console.error("User document stream error:", err);
             callback(null);
           }
-        }, (err) => {
-          console.error("User document stream error:", err);
-          callback(null);
-        });
+        );
       } else {
         callback(null);
       }
@@ -124,7 +127,7 @@ export const firebaseService = {
   addBooking: async (userId: string, booking: Booking): Promise<void> => {
     const bookingData = {
       ...booking,
-      status: 'pending', 
+      status: 'pending',
       userId,
       createdAt: new Date().toISOString()
     };
@@ -141,7 +144,7 @@ export const firebaseService = {
   getBookingsByDate: async (date: string): Promise<string[]> => {
     try {
       const q = query(
-        collection(db, "bookings"), 
+        collection(db, "bookings"),
         where("date", "==", date),
         where("status", "!=", "canceled")
       );
@@ -177,7 +180,12 @@ export const firebaseService = {
     await batch.commit();
   },
 
-  updateBookingStatus: async (bookingDocId: string, userId: string, customId: string, newStatus: 'approved' | 'canceled'): Promise<void> => {
+  updateBookingStatus: async (
+    bookingDocId: string,
+    userId: string,
+    customId: string,
+    newStatus: 'approved' | 'canceled'
+  ): Promise<void> => {
     const docRef = doc(db, "bookings", bookingDocId);
     await updateDoc(docRef, { status: newStatus });
 
@@ -185,14 +193,20 @@ export const firebaseService = {
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
       const userData = userSnap.data() as User;
-      const updatedBookings = userData.bookings.map(b => 
+      const updatedBookings = userData.bookings.map(b =>
         b.id === customId ? { ...b, status: newStatus } : b
       );
       await updateDoc(userRef, { bookings: updatedBookings });
     }
   },
 
-  updateBookingDetails: async (bookingDocId: string, userId: string, customId: string, date: string, time: string): Promise<void> => {
+  updateBookingDetails: async (
+    bookingDocId: string,
+    userId: string,
+    customId: string,
+    date: string,
+    time: string
+  ): Promise<void> => {
     const docRef = doc(db, "bookings", bookingDocId);
     await updateDoc(docRef, { date, time });
 
@@ -200,14 +214,13 @@ export const firebaseService = {
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
       const userData = userSnap.data() as User;
-      const updatedBookings = userData.bookings.map(b => 
+      const updatedBookings = userData.bookings.map(b =>
         b.id === customId ? { ...b, date, time } : b
       );
       await updateDoc(userRef, { bookings: updatedBookings });
     }
   },
 
-  // Hero Image Management
   getHeroImages: async (): Promise<HeroImage[]> => {
     const snap = await getDocs(collection(db, "hero_images"));
     return snap.docs.map(d => ({ id: d.id, ...d.data() } as HeroImage));
@@ -221,7 +234,6 @@ export const firebaseService = {
     await deleteDoc(doc(db, "hero_images", id));
   },
 
-  // Review Management
   getReviews: async (): Promise<Review[]> => {
     const snap = await getDocs(collection(db, "reviews"));
     return snap.docs.map(d => ({ id: d.id, ...d.data() } as Review));
@@ -235,7 +247,6 @@ export const firebaseService = {
     await deleteDoc(doc(db, "reviews", id));
   },
 
-  // Gallery Management
   getGalleryItems: async (): Promise<GalleryItem[]> => {
     const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
@@ -253,12 +264,10 @@ export const firebaseService = {
     await deleteDoc(doc(db, "gallery", id));
   },
 
-  // Contact Form
   submitContactForm: async (submission: Omit<ContactSubmission, 'id'>): Promise<void> => {
     await addDoc(collection(db, "contact_submissions"), submission);
   },
 
-  // Salon Settings
   getSalonSettings: async (): Promise<any> => {
     const docSnap = await getDoc(doc(db, "settings", "salon_config"));
     if (docSnap.exists()) return docSnap.data();
