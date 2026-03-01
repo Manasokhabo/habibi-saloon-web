@@ -23,25 +23,20 @@ import {
   onSnapshot
 } from "firebase/firestore";
 
-import { auth, db } from "../firebaseconfig"; // ⚠️ ছোট হাতের
-
-import {
-  User,
-  Booking,
-  HeroImage,
-  Review,
-  ContactSubmission,
-  GalleryItem
-} from "../types";
+import { auth, db } from "../firebaseconfig";
+import { User, Booking } from "../types";
 
 export const firebaseService = {
-  // Authentication
+
+  // ================= AUTH =================
+
   signUp: async (
     email: string,
     pass: string,
     name: string,
     phone: string
   ): Promise<User> => {
+
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const fbUser = userCredential.user;
 
@@ -71,16 +66,53 @@ export const firebaseService = {
     const fbUser = userCredential.user;
 
     const userDoc = await getDoc(doc(db, "users", fbUser.uid));
-    if (!userDoc.exists()) throw new Error("Profile not found in Firestore.");
+    if (!userDoc.exists()) {
+      throw new Error("User profile not found");
+    }
 
     return userDoc.data() as User;
   },
 
-  resetPassword: async (email: string): Promise<void> => {
+  logout: async () => {
+    await signOut(auth);
+  },
+
+  resetPassword: async (email: string) => {
     await sendPasswordResetEmail(auth, email);
   },
 
-  logout: async () => {
-    await signOut(auth);
+  // ================= REALTIME AUTH =================
+
+  subscribeToAuth: (callback: (user: User | null) => void) => {
+
+    let unsubscribeSnapshot: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
+
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = null;
+      }
+
+      if (fbUser) {
+        const userRef = doc(db, "users", fbUser.uid);
+
+        unsubscribeSnapshot = onSnapshot(userRef, (snap) => {
+          if (snap.exists()) {
+            callback(snap.data() as User);
+          } else {
+            callback(null);
+          }
+        });
+      } else {
+        callback(null);
+      }
+    });
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
   }
+
 };
