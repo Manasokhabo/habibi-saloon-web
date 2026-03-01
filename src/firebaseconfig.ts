@@ -21,7 +21,7 @@ import {
   writeBatch,
   onSnapshot
 } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig";
+import { auth, db } from "../firebaseconfig";
 import { User, Booking, HeroImage, Review, ContactSubmission, GalleryItem, NotificationPreferences } from "../types";
 
 export const firebaseService = {
@@ -136,6 +136,21 @@ export const firebaseService = {
     await updateDoc(userRef, {
       bookings: arrayUnion(updatedBooking)
     });
+  },
+
+  getBookingsByDate: async (date: string): Promise<string[]> => {
+    try {
+      const q = query(
+        collection(db, "bookings"), 
+        where("date", "==", date),
+        where("status", "!=", "canceled")
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map(d => d.data().time);
+    } catch (err) {
+      console.error("Availability Check Error:", err);
+      return [];
+    }
   },
 
   deleteBooking: async (bookingDocId: string): Promise<void> => {
