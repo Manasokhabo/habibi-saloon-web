@@ -45,34 +45,45 @@ const Hero: React.FC<Props> = ({ onNavigate }) => {
 
   return (
     <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center pt-24 pb-12 px-6 md:px-12 overflow-hidden bg-[#050505]">
-      {/* Background Decor */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/5 blur-[120px] rounded-full pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-amber-500/5 blur-[100px] rounded-full pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-8 items-center relative z-10">
+        
         {/* Left Side: Content */}
         <div className="text-center md:text-left order-2 md:order-1 mt-8 md:mt-0">
-          <h2 className="text-amber-500 font-futuristic font-bold tracking-[0.4em] mb-4 uppercase text-[10px] animate-in fade-in slide-in-from-bottom duration-700">Royal Grooming Hub</h2>
+          
+          <h2 className="text-amber-500 font-futuristic font-bold tracking-[0.4em] mb-4 uppercase text-[10px] animate-in fade-in slide-in-from-bottom duration-700">
+            GANAPATI TELECOM
+          </h2>
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-futuristic font-bold leading-[1.1] mb-6 uppercase tracking-tighter animate-in fade-in slide-in-from-bottom duration-1000">
-            Integrated Infrastructure & <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-gray-400 text-glow">Telecom Solutions</span>
+            Trusted Partner in <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-gray-400 text-glow">
+              Construction & Road Infrastructure Solutions
+            </span>
           </h1>
+
           <p className="text-gray-400 text-sm max-w-sm mx-auto md:mx-0 mb-8 leading-relaxed font-light animate-in fade-in slide-in-from-bottom duration-1000 delay-200">
-           Ganapati Telecom is a trusted provider of construction equipment, road safety systems, and telecom infrastructure solutions across India.
+            Ganapati Telecom is a reliable supplier of construction machinery and road infrastructure materials, supporting highways, civil construction, and industrial development projects with durable, performance-driven solutions built to modern engineering standards.
           </p>
+
           <div className="flex flex-wrap justify-center md:justify-start gap-4 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
+            
             <button 
               onClick={() => onNavigate('services')}
               className="px-8 py-3 bg-amber-500 text-black font-bold rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-white transition-all uppercase text-[10px] tracking-widest"
             >
-              OUR SERVICES
+              OUR PRODUCTS
             </button>
+
             <button 
               onClick={() => onNavigate('our-story')}
               className="px-8 py-3 glass text-white font-bold rounded-xl hover:bg-white/10 transition-all uppercase text-[10px] tracking-widest"
             >
-              OUR STORY
+              ABOUT US
             </button>
+
           </div>
         </div>
         
@@ -89,14 +100,13 @@ const Hero: React.FC<Props> = ({ onNavigate }) => {
               >
                 <img 
                   src={img} 
-                  alt={`Habibi Style ${index + 1}`} 
+                  alt={`Ganapati Infrastructure ${index + 1}`} 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
               </div>
             ))}
             
-            {/* Carousel Navigation Dots */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {images.map((_, index) => (
                 <button 
@@ -110,6 +120,7 @@ const Hero: React.FC<Props> = ({ onNavigate }) => {
             </div>
           </div>
         </div>
+
       </div>
     </section>
   );
