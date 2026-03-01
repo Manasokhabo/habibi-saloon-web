@@ -93,7 +93,16 @@ export const firebaseService = {
         unsubscribeSnapshot();
         unsubscribeSnapshot = null;
       }
+// ================= GALLERY =================
 
+getGalleryItems: async () => {
+  const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+},
       if (fbUser) {
         const userRef = doc(db, "users", fbUser.uid);
 
