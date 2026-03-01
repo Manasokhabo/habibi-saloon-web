@@ -15,15 +15,15 @@ const Navbar: React.FC<Props> = ({ onNavigate, currentPage, user }) => {
   const navLinks = [
     { name: 'Home', id: 'home' },
     { name: 'Gallery', id: 'gallery' },
-    { name: 'Our Story', id: 'our-story' },
-    { name: 'Services', id: 'services' },
-    { name: 'Packages', id: 'packages' },
+    { name: 'About Us', id: 'our-story' },
+    { name: 'Products', id: 'services' },
+    { name: 'Project Packages', id: 'packages' },
     { name: 'Contact', id: 'contact' },
-    { name: 'AI Stylist', id: 'ai-advisor' },
+    { name: 'Project Advisor', id: 'ai-advisor' },
   ];
 
   // Logic to determine if the logged-in user is an administrator
-  const isAdmin = user?.role === 'admin' || user?.email === 'admin@habibisalooon.com';
+  const isAdmin = user?.role === 'admin' || user?.email === 'admin@ganapatitelecom.com';
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -43,13 +43,18 @@ const Navbar: React.FC<Props> = ({ onNavigate, currentPage, user }) => {
   return (
     <nav ref={navbarRef} className="fixed top-0 left-0 right-0 z-[100] bg-[#050505] border-b border-white/10 px-6 py-4 shadow-2xl">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
+        
         {/* Logo */}
         <div 
           className="flex items-center gap-2 cursor-pointer group shrink-0" 
           onClick={() => handleLinkClick('home')}
         >
-          <div className="w-8 h-8 bg-amber-500 rounded flex items-center justify-center font-bold text-black font-futuristic shadow-[0_0_15px_rgba(245,158,11,0.5)] group-hover:scale-110 transition-transform text-sm">H</div>
-          <span className="text-xl font-bold tracking-tighter font-futuristic text-white">HABIBI <span className="text-amber-500">SALOON</span></span>
+          <div className="w-8 h-8 bg-amber-500 rounded flex items-center justify-center font-bold text-black font-futuristic shadow-[0_0_15px_rgba(245,158,11,0.5)] group-hover:scale-110 transition-transform text-sm">
+            G
+          </div>
+          <span className="text-xl font-bold tracking-tighter font-futuristic text-white">
+            GANAPATI <span className="text-amber-500">TELECOM</span>
+          </span>
         </div>
         
         {/* Desktop Nav Links */}
@@ -85,20 +90,20 @@ const Navbar: React.FC<Props> = ({ onNavigate, currentPage, user }) => {
                   onClick={() => handleLinkClick('auth', { mode: 'signup' })}
                   className="text-[10px] font-bold bg-white text-black hover:bg-amber-500 uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all"
                 >
-                  Join Now
+                  Register
                 </button>
               </>
             ) : isAdmin ? (
-              /* Admin Specific Console Button */
               <button 
                 onClick={() => handleLinkClick('admin')}
                 className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/50 rounded-xl hover:bg-amber-500 hover:text-black transition-all group"
               >
                 <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                <span className="text-[10px] font-bold text-amber-500 group-hover:text-black uppercase tracking-widest">Admin Console</span>
+                <span className="text-[10px] font-bold text-amber-500 group-hover:text-black uppercase tracking-widest">
+                  Admin Dashboard
+                </span>
               </button>
             ) : (
-              /* Standard User Profile */
               <button 
                 onClick={() => handleLinkClick('profile')}
                 className="flex items-center gap-2 glass px-3 py-1.5 rounded-full border-amber-500/30 hover:border-amber-500 transition-all"
@@ -106,7 +111,9 @@ const Navbar: React.FC<Props> = ({ onNavigate, currentPage, user }) => {
                 <div className="w-6 h-6 rounded-full overflow-hidden border border-amber-500/50">
                   <img src={user.avatar} alt="User" className="w-full h-full object-cover" />
                 </div>
-                <span className="text-[9px] font-bold text-white uppercase tracking-widest">{user.name.split(' ')[0]}</span>
+                <span className="text-[9px] font-bold text-white uppercase tracking-widest">
+                  {user.name.split(' ')[0]}
+                </span>
               </button>
             )}
           </div>
@@ -115,7 +122,7 @@ const Navbar: React.FC<Props> = ({ onNavigate, currentPage, user }) => {
             onClick={() => handleLinkClick('booking')}
             className="hidden sm:block px-6 py-2.5 bg-amber-500 text-black text-[10px] font-bold rounded-xl hover:bg-white transition-all font-futuristic uppercase tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.3)]"
           >
-            BOOK NOW
+            GET QUOTE
           </button>
 
           {/* Mobile Toggle */}
@@ -130,7 +137,6 @@ const Navbar: React.FC<Props> = ({ onNavigate, currentPage, user }) => {
         </div>
       </div>
 
-      {/* Mobile Menu Drawer */}
       {showMobileMenu && (
         <div className="lg:hidden absolute top-full left-0 right-0 bg-[#0a0a0a] border-b border-white/10 animate-in slide-in-from-top duration-300 shadow-2xl z-[90]">
           <div className="px-6 py-10 space-y-6">
@@ -150,14 +156,14 @@ const Navbar: React.FC<Props> = ({ onNavigate, currentPage, user }) => {
               {!user ? (
                 <>
                   <button onClick={() => handleLinkClick('auth', { mode: 'login' })} className="w-full py-4 text-center text-white border border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest bg-white/5">Login</button>
-                  <button onClick={() => handleLinkClick('auth', { mode: 'signup' })} className="w-full py-4 text-center bg-white text-black rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500">Join Now</button>
+                  <button onClick={() => handleLinkClick('auth', { mode: 'signup' })} className="w-full py-4 text-center bg-white text-black rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500">Register</button>
                 </>
               ) : isAdmin ? (
-                <button onClick={() => handleLinkClick('admin')} className="w-full py-4 text-center bg-amber-500 text-black font-bold rounded-2xl text-[10px] uppercase tracking-widest">ADMIN CONSOLE</button>
+                <button onClick={() => handleLinkClick('admin')} className="w-full py-4 text-center bg-amber-500 text-black font-bold rounded-2xl text-[10px] uppercase tracking-widest">ADMIN DASHBOARD</button>
               ) : (
                 <button onClick={() => handleLinkClick('profile')} className="w-full py-4 text-center glass text-white rounded-2xl text-[10px] uppercase tracking-widest">VIEW PROFILE</button>
               )}
-              <button onClick={() => handleLinkClick('booking')} className="w-full py-5 bg-amber-500 text-black font-bold rounded-2xl font-futuristic uppercase tracking-widest text-xs shadow-lg">BOOK NOW</button>
+              <button onClick={() => handleLinkClick('booking')} className="w-full py-5 bg-amber-500 text-black font-bold rounded-2xl font-futuristic uppercase tracking-widest text-xs shadow-lg">GET QUOTE</button>
             </div>
           </div>
         </div>
