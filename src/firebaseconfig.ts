@@ -21,7 +21,7 @@ import {
   writeBatch,
   onSnapshot
 } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig"; // ✅ FIXED HERE
+import { auth, db } from "../firebaseconfig";
 import { User, Booking, HeroImage, Review, ContactSubmission, GalleryItem, NotificationPreferences } from "../types";
 
 export const firebaseService = {
